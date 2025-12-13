@@ -24,7 +24,6 @@ export function ComingSoonContent() {
   const [customerId, setCustomerId] = useState<string>("")
   const [isInputFocused, setIsInputFocused] = useState(false)
   const [keyboardOffset, setKeyboardOffset] = useState(0)
-  const submitButtonRef = useRef<HTMLButtonElement | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -46,24 +45,26 @@ export function ComingSoonContent() {
 
     updateKeyboardOffset()
     visualViewport.addEventListener("resize", updateKeyboardOffset)
-    visualViewport.addEventListener("scroll", updateKeyboardOffset)
 
     return () => {
       visualViewport.removeEventListener("resize", updateKeyboardOffset)
-      visualViewport.removeEventListener("scroll", updateKeyboardOffset)
     }
   }, [isInputFocused])
 
   const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsInputFocused(true)
+    // Proactively measure keyboard offset after focus to avoid a delayed layout update
+    // (some mobile browsers only report visualViewport changes slightly later).
+    const visualViewport = window.visualViewport
+    if (!visualViewport) return
 
-    // Try a couple times to account for keyboard animation timing on mobile browsers.
-    const scrollButtonIntoView = () => {
-      submitButtonRef.current?.scrollIntoView({ block: "end", behavior: "smooth" })
+    const updateKeyboardOffset = () => {
+      const offset = Math.max(0, Math.round(window.innerHeight - visualViewport.height))
+      setKeyboardOffset(offset)
     }
 
-    window.setTimeout(scrollButtonIntoView, 50)
-    window.setTimeout(scrollButtonIntoView, 350)
+    window.setTimeout(updateKeyboardOffset, 50)
+    window.setTimeout(updateKeyboardOffset, 250)
   }
 
   const handleInputBlur = () => {
@@ -144,9 +145,7 @@ export function ComingSoonContent() {
   return (
     <>
       <div
-        className={`min-h-[100dvh] bg-gradient-to-br from-secondary via-background to-muted flex justify-center p-4 transition-all duration-300 ${
-          isInputFocused ? "items-start pt-10" : "items-center"
-        }`}
+        className="min-h-[100dvh] bg-gradient-to-br from-secondary via-background to-muted flex items-center justify-center p-4"
         style={
           isInputFocused
             ? {
@@ -249,13 +248,7 @@ export function ComingSoonContent() {
                       </Alert>
                     )}
 
-                    <Button
-                      ref={submitButtonRef}
-                      type="submit"
-                      size="lg"
-                      className="w-full h-12"
-                      disabled={loading}
-                    >
+                    <Button type="submit" size="lg" className="w-full h-12" disabled={loading}>
                       {loading ? "Signing Up..." : "Notify Me"}
                     </Button>
                   </form>
@@ -298,13 +291,7 @@ export function ComingSoonContent() {
                   </Alert>
                 )}
 
-                <Button
-                  ref={submitButtonRef}
-                  type="submit"
-                  size="lg"
-                  className="w-full h-12"
-                  disabled={loading}
-                >
+                <Button type="submit" size="lg" className="w-full h-12" disabled={loading}>
                   {loading ? "Unlocking..." : "Unlock Store"}
                 </Button>
               </form>
