@@ -1,8 +1,15 @@
 import Link from "next/link"
 import { CartDrawer } from "@/components/cart/cart-drawer"
 import { MobileMenu } from "@/components/mobile-menu"
+import { Button } from "@/components/ui/button"
+import { User } from "lucide-react"
+import { parseShopifyDomain } from "@/lib/shopify/parse-shopify-domain"
 
 export function Header() {
+  const rawStoreDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN
+  const storeDomain = rawStoreDomain ? parseShopifyDomain(rawStoreDomain) : null
+  const accountUrl = storeDomain ? `https://${storeDomain}/account/login` : "/"
+
   return (
     <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -25,6 +32,11 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" asChild>
+            <a href={accountUrl} aria-label="Account">
+              <User className="h-5 w-5" />
+            </a>
+          </Button>
           <CartDrawer />
           <MobileMenu />
         </div>

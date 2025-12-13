@@ -17,7 +17,7 @@ type CartItem = {
 
 type CartContextType = {
   items: CartItem[]
-  addItem: (variant: ProductVariant, product: ShopifyProduct) => Promise<void>
+  addItem: (variant: ProductVariant, product: ShopifyProduct) => Promise<string | null>
   removeItem: (variantId: string) => void
   clearCart: () => void
   itemCount: number
@@ -37,6 +37,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Load cart from localStorage on mount
   useEffect(() => {
     const savedCartId = localStorage.getItem("shopify-cart-id")
+    const savedCheckoutUrl = localStorage.getItem("shopify-checkout-url")
+    if (savedCheckoutUrl) {
+      setCheckoutUrl(savedCheckoutUrl)
+    }
     if (savedCartId) {
       setCartId(savedCartId)
       getCartAction(savedCartId).then((result) => {
@@ -53,6 +57,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           }))
           setItems(cartItems)
           setCheckoutUrl(result.cart.checkoutUrl)
+          localStorage.setItem("shopify-checkout-url", result.cart.checkoutUrl)
         }
       })
     }
@@ -93,8 +98,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       setItems(cartItems)
       setCheckoutUrl(result.cart.checkoutUrl)
+      localStorage.setItem("shopify-checkout-url", result.cart.checkoutUrl)
+      return result.cart.checkoutUrl
     } catch (error) {
       console.error("Error adding item to cart:", error)
+      return null
     } finally {
       setIsLoading(false)
     }
@@ -109,6 +117,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCartId(null)
     setCheckoutUrl(null)
     localStorage.removeItem("shopify-cart-id")
+    localStorage.removeItem("shopify-checkout-url")
   }
 
   const itemCount = items.reduce((total, item) => total + item.quantity, 0)
