@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,7 +23,52 @@ export function ComingSoonContent() {
   const [showSmsModal, setShowSmsModal] = useState(false)
   const [customerId, setCustomerId] = useState<string>("")
   const [isInputFocused, setIsInputFocused] = useState(false)
+  const [keyboardOffset, setKeyboardOffset] = useState(0)
+  const submitButtonRef = useRef<HTMLButtonElement | null>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    if (!isInputFocused) {
+      setKeyboardOffset(0)
+      return
+    }
+
+    // iOS Safari: visual viewport shrinks when keyboard opens, but the resize timing
+    // can be delayed (often until after the first input event). We listen for visualViewport
+    // changes and use that to add bottom padding so the submit button stays above the keyboard.
+    const visualViewport = window.visualViewport
+    if (!visualViewport) return
+
+    const updateKeyboardOffset = () => {
+      const offset = Math.max(0, Math.round(window.innerHeight - visualViewport.height))
+      setKeyboardOffset(offset)
+    }
+
+    updateKeyboardOffset()
+    visualViewport.addEventListener("resize", updateKeyboardOffset)
+    visualViewport.addEventListener("scroll", updateKeyboardOffset)
+
+    return () => {
+      visualViewport.removeEventListener("resize", updateKeyboardOffset)
+      visualViewport.removeEventListener("scroll", updateKeyboardOffset)
+    }
+  }, [isInputFocused])
+
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    setIsInputFocused(true)
+
+    // Try a couple times to account for keyboard animation timing on mobile browsers.
+    const scrollButtonIntoView = () => {
+      submitButtonRef.current?.scrollIntoView({ block: "end", behavior: "smooth" })
+    }
+
+    window.setTimeout(scrollButtonIntoView, 50)
+    window.setTimeout(scrollButtonIntoView, 350)
+  }
+
+  const handleInputBlur = () => {
+    setIsInputFocused(false)
+  }
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,7 +91,7 @@ export function ComingSoonContent() {
       } else {
         setError(result.error || "Failed to sign up")
       }
-    } catch (err) {
+    } catch (_err) {
       setError("Something went wrong. Please try again.")
     } finally {
       setLoading(false)
@@ -68,7 +113,7 @@ export function ComingSoonContent() {
       } else {
         setError(result.error || "Incorrect password. Please try again.")
       }
-    } catch (err) {
+    } catch (_err) {
       setError("Something went wrong. Please try again.")
     } finally {
       setLoading(false)
@@ -98,7 +143,19 @@ export function ComingSoonContent() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-muted flex items-center justify-center p-4">
+      <div
+        className={`min-h-[100dvh] bg-gradient-to-br from-secondary via-background to-muted flex justify-center p-4 transition-all duration-300 ${
+          isInputFocused ? "items-start pt-10" : "items-center"
+        }`}
+        style={
+          isInputFocused
+            ? {
+                // Keep the submit button clear of the keyboard (and safe area) on mobile.
+                paddingBottom: `calc(${keyboardOffset}px + env(safe-area-inset-bottom) + 24px)`,
+              }
+            : undefined
+        }
+      >
         <div className="absolute top-20 left-10 w-20 h-20 bg-accent/20 rounded-full blur-2xl animate-pulse" />
         <div className="absolute bottom-20 right-10 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse" />
 
@@ -126,6 +183,7 @@ export function ComingSoonContent() {
                 setMode("signup")
                 setError("")
                 setSubmitted(false)
+                setIsInputFocused(false)
               }}
               className="gap-2"
             >
@@ -138,6 +196,7 @@ export function ComingSoonContent() {
                 setMode("unlock")
                 setError("")
                 setSubmitted(false)
+                setIsInputFocused(false)
               }}
               className="gap-2"
             >
@@ -165,7 +224,7 @@ export function ComingSoonContent() {
 
                   <form
                     onSubmit={handleEmailSignup}
-                    className={`space-y-4 transition-all duration-300 ${isInputFocused ? "mb-32" : "mb-0"}`}
+                    className="space-y-4"
                   >
                     <div className="text-left">
                       <Label htmlFor="email" className="mb-2 block">
@@ -177,8 +236,8 @@ export function ComingSoonContent() {
                         placeholder="your@email.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        onFocus={() => setIsInputFocused(true)}
-                        onBlur={() => setIsInputFocused(false)}
+                        onFocus={handleInputFocus}
+                        onBlur={handleInputBlur}
                         required
                         className="h-12"
                       />
@@ -190,7 +249,13 @@ export function ComingSoonContent() {
                       </Alert>
                     )}
 
-                    <Button type="submit" size="lg" className="w-full h-12" disabled={loading}>
+                    <Button
+                      ref={submitButtonRef}
+                      type="submit"
+                      size="lg"
+                      className="w-full h-12"
+                      disabled={loading}
+                    >
                       {loading ? "Signing Up..." : "Notify Me"}
                     </Button>
                   </form>
@@ -208,7 +273,7 @@ export function ComingSoonContent() {
 
               <form
                 onSubmit={handlePasswordUnlock}
-                className={`space-y-4 transition-all duration-300 ${isInputFocused ? "mb-32" : "mb-0"}`}
+                className="space-y-4"
               >
                 <div className="text-left">
                   <Label htmlFor="password" className="mb-2 block">
@@ -220,8 +285,8 @@ export function ComingSoonContent() {
                     placeholder="Enter password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    onFocus={() => setIsInputFocused(true)}
-                    onBlur={() => setIsInputFocused(false)}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
                     required
                     className="h-12"
                   />
@@ -233,7 +298,13 @@ export function ComingSoonContent() {
                   </Alert>
                 )}
 
-                <Button type="submit" size="lg" className="w-full h-12" disabled={loading}>
+                <Button
+                  ref={submitButtonRef}
+                  type="submit"
+                  size="lg"
+                  className="w-full h-12"
+                  disabled={loading}
+                >
                   {loading ? "Unlocking..." : "Unlock Store"}
                 </Button>
               </form>
