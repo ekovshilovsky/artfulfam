@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next"
 import { Fredoka, Caveat } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { CartProvider } from "@/components/cart/cart-context"
+import { AuthProvider } from "@/components/auth/auth-context"
 import { PasswordChecker } from "@/components/coming-soon/password-checker"
 import "./globals.css"
 
@@ -61,7 +62,9 @@ export default function RootLayout({
     <html lang="en" className="bg-background">
       <body className={`${fredoka.variable} ${caveat.variable} font-sans antialiased`}>
         <PasswordChecker />
-        <CartProvider>{children}</CartProvider>
+        <AuthProvider>
+          <CartProvider>{children}</CartProvider>
+        </AuthProvider>
         <Analytics />
       </body>
     </html>

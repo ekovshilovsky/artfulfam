@@ -582,3 +582,99 @@ export async function getCart(cartId: string): Promise<ShopifyCart | null> {
     return null
   }
 }
+
+// Update cart buyer identity (associate cart with logged-in customer)
+export async function updateCartBuyerIdentity(
+  cartId: string,
+  customerAccessToken: string
+): Promise<ShopifyCart | null> {
+  const query = /* GraphQL */ `
+    mutation cartBuyerIdentityUpdate($cartId: ID!, $buyerIdentity: CartBuyerIdentityInput!) {
+      cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) {
+        cart {
+          id
+          lines(first: 100) {
+            edges {
+              node {
+                id
+                quantity
+                merchandise {
+                  ... on ProductVariant {
+                    id
+                    title
+                    price {
+                      amount
+                      currencyCode
+                    }
+                    selectedOptions {
+                      name
+                      value
+                    }
+                    product {
+                      title
+                      handle
+                      images(first: 10) {
+                        edges {
+                          node {
+                            url
+                            altText
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          cost {
+            totalAmount {
+              amount
+              currencyCode
+            }
+            subtotalAmount {
+              amount
+              currencyCode
+            }
+            totalTaxAmount {
+              amount
+              currencyCode
+            }
+          }
+          checkoutUrl
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `
+
+  try {
+    const { data } = await shopifyFetch<{
+      cartBuyerIdentityUpdate: {
+        cart: ShopifyCart | null
+        userErrors: Array<{ field: string; message: string }>
+      }
+    }>({
+      query,
+      variables: {
+        cartId,
+        buyerIdentity: {
+          customerAccessToken,
+        },
+      },
+    })
+
+    if (data.cartBuyerIdentityUpdate.userErrors.length > 0) {
+      console.error("[v0] Cart buyer identity update errors:", data.cartBuyerIdentityUpdate.userErrors)
+      return null
+    }
+
+    return data.cartBuyerIdentityUpdate.cart
+  } catch (error) {
+    console.error("[v0] Error updating cart buyer identity:", error)
+    return null
+  }
+}

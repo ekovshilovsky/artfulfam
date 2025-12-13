@@ -154,6 +154,22 @@ export async function getShopLoginUrl() {
   }
 }
 
+export async function associateCartWithCustomerAction(cartId: string, customerAccessToken: string) {
+  try {
+    const { updateCartBuyerIdentity } = await import("./index")
+    const cart = await updateCartBuyerIdentity(cartId, customerAccessToken)
+    
+    if (!cart) {
+      return { success: false, error: "Failed to associate cart with customer" }
+    }
+    
+    return { success: true, cart }
+  } catch (error) {
+    console.error("Error associating cart with customer:", error)
+    return { success: false, error: "Failed to associate cart" }
+  }
+}
+
 export async function createCustomerAction(email: string, tags: string[] = []) {
   try {
     const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN
