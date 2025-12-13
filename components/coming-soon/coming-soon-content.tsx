@@ -145,7 +145,7 @@ export function ComingSoonContent() {
   return (
     <>
       <div
-        className="min-h-[100dvh] bg-gradient-to-br from-secondary via-background to-muted flex items-center justify-center p-4 transition-all duration-300"
+        className="min-h-[100dvh] bg-gradient-to-br from-secondary via-background to-muted flex items-center justify-center p-4"
         style={
           isInputFocused
             ? {
