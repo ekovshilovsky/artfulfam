@@ -17,7 +17,7 @@ type CartItem = {
 
 type CartContextType = {
   items: CartItem[]
-  addItem: (variant: ProductVariant, product: ShopifyProduct) => Promise<void>
+  addItem: (variant: ProductVariant, product: Pick<ShopifyProduct, "title" | "handle">) => Promise<void>
   removeItem: (variantId: string) => void
   clearCart: () => void
   itemCount: number
@@ -58,7 +58,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const addItem = async (variant: ProductVariant, product: ShopifyProduct) => {
+  const addItem = async (variant: ProductVariant, product: Pick<ShopifyProduct, "title" | "handle">) => {
     setIsLoading(true)
     try {
       let currentCartId = cartId

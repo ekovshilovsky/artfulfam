@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { CartDrawer } from "@/components/cart/cart-drawer"
 import { MobileMenu } from "@/components/mobile-menu"
+import { UserAccountButton } from "@/components/user-account-button"
 
 export function Header() {
   return (
@@ -24,7 +25,8 @@ export function Header() {
           </Link>
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          <UserAccountButton />
           <CartDrawer />
           <MobileMenu />
         </div>
