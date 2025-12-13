@@ -1,5 +1,5 @@
 {
-  "name": "Artsy Fam",
+  "name": "ArtsyFam",
   "short_name": "ArtsyFam",
   "description": "Original art creations by young artists, available on print-on-demand products",
   "start_url": "/",
@@ -8,23 +8,24 @@
   "theme_color": "#9333EA",
   "icons": [
     {
-      "src": "/favicon-16x16.png",
-      "sizes": "16x16",
-      "type": "image/png"
-    },
-    {
-      "src": "/favicon-32x32.png",
+      "src": "/icon-light-32x32.png",
       "sizes": "32x32",
       "type": "image/png"
     },
     {
       "src": "/apple-touch-icon.jpg",
       "sizes": "180x180",
-      "type": "image/png"
+      "type": "image/jpeg"
     },
     {
-      "src": "/og-image.jpg",
-      "sizes": "1200x628",
+      "src": "/icon-192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.jpg",
+      "sizes": "512x512",
       "type": "image/jpeg",
       "purpose": "any maskable"
     }
