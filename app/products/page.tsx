@@ -50,7 +50,7 @@ export default async function ProductsPage() {
                 return (
                   <Card
                     key={product.id}
-                    className="group overflow-hidden border-2 hover:border-primary transition-all duration-300"
+                    className="group overflow-hidden border-2 hover:border-primary transition-colors duration-300"
                   >
                     <Link href={`/products/${product.handle}`}>
                       <div className="relative aspect-square overflow-hidden bg-muted">
