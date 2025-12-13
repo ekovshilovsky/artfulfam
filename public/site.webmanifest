@@ -8,9 +8,9 @@
   "theme_color": "#9333EA",
   "icons": [
     {
-      "src": "/icon-light-32x32.png",
+      "src": "/favicon-32x32.jpg",
       "sizes": "32x32",
-      "type": "image/png"
+      "type": "image/jpeg"
     },
     {
       "src": "/apple-touch-icon.jpg",
