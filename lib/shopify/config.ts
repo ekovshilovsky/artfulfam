@@ -4,7 +4,7 @@
  * Optimized for Vercel serverless deployment
  */
 
-import { shopifyApi, ApiVersion } from '@shopify/shopify-api'
+import { shopifyApi } from '@shopify/shopify-api'
 import '@shopify/shopify-api/adapters/node'
 
 /**
@@ -28,12 +28,19 @@ export function getShopifyApi() {
     }
   }
 
-  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  const HOST = APP_URL.replace(/https?:\/\//, '')
+  // Resolve the app URL for the environment
+  // Prefer Vercel's runtime URL for Preview/Prod, fall back to NEXT_PUBLIC_APP_URL or localhost
+  const resolvedAppUrl = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000')
+  const HOST = new URL(resolvedAppUrl).host
+
+  // Allow overriding API version via env; default to the latest stable shown in your screenshot
+  const apiVersion = process.env.SHOPIFY_API_VERSION || '2025-10'
 
   shopifyInstance = shopifyApi({
-    apiKey: process.env.SHOPIFY_CLIENT_ID || 'placeholder',
-    apiSecretKey: process.env.SHOPIFY_CLIENT_SECRET || 'placeholder',
+    apiKey: process.env.SHOPIFY_CLIENT_ID || '',
+    apiSecretKey: process.env.SHOPIFY_CLIENT_SECRET || '',
     scopes: [
       'read_products',
       'read_customers',
@@ -43,9 +50,9 @@ export function getShopifyApi() {
     ],
     hostName: HOST,
     hostScheme: process.env.NODE_ENV === 'production' ? 'https' : 'http',
-    apiVersion: ApiVersion.October24,
+    apiVersion, // string value, e.g. '2025-10'
     isEmbeddedApp: false,
-    isCustomStoreApp: true,
+    // Do NOT set isCustomStoreApp for OAuth apps from the Partner (Dev) Dashboard
     logger: {
       level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
     },
