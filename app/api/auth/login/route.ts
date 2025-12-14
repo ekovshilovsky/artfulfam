@@ -17,11 +17,30 @@ export async function GET() {
     
     // Check if auth is properly configured
     if (!config.clientId || !config.shopId) {
+      console.error("Shop login not configured:", { 
+        hasClientId: !!config.clientId, 
+        hasShopId: !!config.shopId,
+        shopId: config.shopId,
+        redirectUri: config.redirectUri 
+      })
       return NextResponse.json(
-        { error: "Shop login is not configured. Please set SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_ID and SHOPIFY_SHOP_ID environment variables." },
+        { 
+          error: "Shop login is not configured. Please set SHOPIFY_CLIENT_ID and SHOPIFY_SHOP_ID environment variables.",
+          debug: {
+            hasClientId: !!config.clientId,
+            hasShopId: !!config.shopId,
+            siteUrl: config.siteUrl,
+          }
+        },
         { status: 503 }
       )
     }
+    
+    console.log("Starting OAuth flow:", {
+      shopId: config.shopId,
+      redirectUri: config.redirectUri,
+      authEndpoint: config.authorizationEndpoint,
+    })
     
     // Generate PKCE values
     const codeVerifier = generateCodeVerifier()

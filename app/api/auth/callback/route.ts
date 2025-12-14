@@ -86,8 +86,9 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Callback error:", error)
     const config = getAuthConfig()
+    const errorMessage = error instanceof Error ? error.message : "Failed to complete authentication"
     return NextResponse.redirect(
-      `${config.siteUrl}?auth_error=${encodeURIComponent("Failed to complete authentication")}`
+      `${config.siteUrl}?auth_error=${encodeURIComponent(errorMessage)}`
     )
   }
 }

@@ -25,7 +25,7 @@ export async function checkStoreAccessAction() {
       return cachedStatus
     }
 
-    // If Admin API token is available, check password_enabled directly
+    // Method 1: If Admin API token is available, check password_enabled directly
     if (adminToken) {
       const shopDomain = domain.replace(".myshopify.com", "")
       const url = `https://${shopDomain}.myshopify.com/admin/api/2024-10/shop.json`
@@ -55,13 +55,53 @@ export async function checkStoreAccessAction() {
 
         // If we get an error, check if it's a scope issue
         if (response.status === 403 || response.status === 401) {
-          console.error("[v0] Admin API access denied. Required scope: read_shop_data")
+          console.error("[v0] Admin API access denied. Required scope: read_shop")
         }
       }
     }
 
-    // Fallback: no admin token or API call failed, assume not password protected
-    console.log("[v0] Falling back to no password protection")
+    // Method 2: Try to detect password protection via Storefront API
+    // If the store is password protected, the Storefront API returns an error
+    const storefrontToken = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN
+    if (storefrontToken) {
+      try {
+        const shopDomain = domain.includes(".myshopify.com") ? domain : `${domain}.myshopify.com`
+        const storefrontUrl = `https://${shopDomain}/api/2024-10/graphql.json`
+        
+        const testQuery = `{ shop { name } }`
+        
+        const response = await fetch(storefrontUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Shopify-Storefront-Access-Token": storefrontToken,
+          },
+          body: JSON.stringify({ query: testQuery }),
+        })
+        
+        if (!response.ok) {
+          const responseText = await response.text()
+          console.log("[v0] Storefront API response:", response.status, responseText)
+          
+          // Check if it's a password protection error
+          if (response.status === 401 || responseText.includes("password") || responseText.includes("Password")) {
+            console.log("[v0] Store appears to be password protected (Storefront API blocked)")
+            setCachedPasswordStatus(true)
+            return { isPasswordProtected: true }
+          }
+        } else {
+          // Store is accessible, not password protected
+          console.log("[v0] Storefront API accessible - store not password protected")
+          setCachedPasswordStatus(false)
+          return { isPasswordProtected: false }
+        }
+      } catch (storefrontError) {
+        console.error("[v0] Storefront API check error:", storefrontError)
+      }
+    }
+
+    // Fallback: no tokens or API calls failed, assume not password protected
+    console.log("[v0] Falling back to no password protection (no tokens configured)")
     const fallbackStatus = { isPasswordProtected: false }
     setCachedPasswordStatus(false)
     return fallbackStatus
