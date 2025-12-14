@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { getAccessToken } from "@/lib/shopify/oauth"
 
 export async function POST(request: Request) {
   try {
@@ -9,7 +10,7 @@ export async function POST(request: Request) {
     }
 
     const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN
-    const adminToken = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN
+    const adminToken = await getAccessToken()
 
     if (!domain || !adminToken) {
       return NextResponse.json({ success: false, error: "Shopify not configured" }, { status: 500 })

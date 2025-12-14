@@ -1,11 +1,11 @@
 import type { ProductCollectionSortKey, ProductSortKey, ShopifyCart, ShopifyCollection, ShopifyProduct } from "./types"
 import { parseShopifyDomain } from "./parse-shopify-domain"
 import { DEFAULT_PAGE_SIZE, DEFAULT_SORT_KEY } from "./constants"
+import { getStorefrontAccessToken } from "./oauth"
 
 const rawStoreDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN
 const SHOPIFY_STORE_DOMAIN = rawStoreDomain ? parseShopifyDomain(rawStoreDomain) : "your-store.myshopify.com"
 const SHOPIFY_STOREFRONT_API_URL = `https://${SHOPIFY_STORE_DOMAIN}/api/2024-10/graphql.json`
-const SHOPIFY_STOREFRONT_ACCESS_TOKEN = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN
 
 async function shopifyFetch<T>({
   query,
@@ -15,6 +15,8 @@ async function shopifyFetch<T>({
   variables?: Record<string, any>
 }): Promise<{ data: T; errors?: any[] }> {
   try {
+    const SHOPIFY_STOREFRONT_ACCESS_TOKEN = getStorefrontAccessToken()
+
     console.log("[v0] Shopify request details:", {
       url: SHOPIFY_STOREFRONT_API_URL,
       domain: SHOPIFY_STORE_DOMAIN,
