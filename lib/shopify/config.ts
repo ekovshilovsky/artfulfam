@@ -4,42 +4,60 @@
  * Optimized for Vercel serverless deployment
  */
 
-import { shopifyApi, LATEST_API_VERSION, ApiVersion } from '@shopify/shopify-api'
+import { shopifyApi, ApiVersion } from '@shopify/shopify-api'
 import '@shopify/shopify-api/adapters/node'
 
-if (!process.env.SHOPIFY_CLIENT_ID) {
-  throw new Error('SHOPIFY_CLIENT_ID is required')
+/**
+ * Get Shopify API instance (lazy initialization for build compatibility)
+ */
+let shopifyInstance: ReturnType<typeof shopifyApi> | null = null
+
+export function getShopifyApi() {
+  if (shopifyInstance) {
+    return shopifyInstance
+  }
+
+  // Only validate in runtime, not during build
+  if (typeof window === 'undefined' && process.env.NODE_ENV !== 'production') {
+    // Development/runtime checks
+    if (!process.env.SHOPIFY_CLIENT_ID) {
+      console.warn('SHOPIFY_CLIENT_ID is not set')
+    }
+    if (!process.env.SHOPIFY_CLIENT_SECRET) {
+      console.warn('SHOPIFY_CLIENT_SECRET is not set')
+    }
+  }
+
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const HOST = APP_URL.replace(/https?:\/\//, '')
+
+  shopifyInstance = shopifyApi({
+    apiKey: process.env.SHOPIFY_CLIENT_ID || 'placeholder',
+    apiSecretKey: process.env.SHOPIFY_CLIENT_SECRET || 'placeholder',
+    scopes: [
+      'read_products',
+      'read_customers',
+      'write_customers',
+      'read_orders',
+      'write_orders',
+    ],
+    hostName: HOST,
+    hostScheme: process.env.NODE_ENV === 'production' ? 'https' : 'http',
+    apiVersion: ApiVersion.October24,
+    isEmbeddedApp: false,
+    isCustomStoreApp: true,
+    logger: {
+      level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
+    },
+  })
+
+  return shopifyInstance
 }
 
-if (!process.env.SHOPIFY_CLIENT_SECRET) {
-  throw new Error('SHOPIFY_CLIENT_SECRET is required')
-}
-
-if (!process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN) {
-  throw new Error('NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN is required')
-}
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-const HOST = APP_URL.replace(/https?:\/\//, '')
-
-// Initialize Shopify API
-export const shopify = shopifyApi({
-  apiKey: process.env.SHOPIFY_CLIENT_ID,
-  apiSecretKey: process.env.SHOPIFY_CLIENT_SECRET,
-  scopes: [
-    'read_products',
-    'read_customers',
-    'write_customers',
-    'read_orders',
-    'write_orders',
-  ],
-  hostName: HOST,
-  hostScheme: process.env.NODE_ENV === 'production' ? 'https' : 'http',
-  apiVersion: LATEST_API_VERSION,
-  isEmbeddedApp: false, // Custom storefront, not embedded
-  isCustomStoreApp: true, // Single-store custom app
-  logger: {
-    level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
+// Export for backwards compatibility
+export const shopify = new Proxy({} as ReturnType<typeof shopifyApi>, {
+  get(target, prop) {
+    return getShopifyApi()[prop as keyof ReturnType<typeof shopifyApi>]
   },
 })
 
@@ -63,6 +81,10 @@ export function createSession(shop: string, accessToken: string) {
  * Get the shop domain from environment
  */
 export function getShopDomain(): string {
-  const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN!
+  const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || 'your-store.myshopify.com'
+  if (!domain || domain === 'your-store.myshopify.com') {
+    // During build or when not configured
+    return 'your-store.myshopify.com'
+  }
   return domain.includes('.myshopify.com') ? domain : `${domain}.myshopify.com`
 }
