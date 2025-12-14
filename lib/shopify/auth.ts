@@ -5,36 +5,68 @@
  * 
  * Required environment variables:
  * - NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN: Your store domain (e.g., your-store.myshopify.com)
- * - SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_ID: Client ID from Shopify Headless channel
- * - NEXT_PUBLIC_SITE_URL: Your site URL (e.g., https://your-site.vercel.app)
+ * - SHOPIFY_CLIENT_ID: Client ID from Shopify app
+ * - SHOPIFY_CLIENT_SECRET: Client Secret from Shopify app
+ * - SHOPIFY_SHOP_ID: Your numeric shop ID
+ * 
+ * The site URL is automatically detected from Vercel environment variables:
+ * - Production: VERCEL_PROJECT_PRODUCTION_URL
+ * - Preview: VERCEL_URL
+ * - Local: http://localhost:3000
  * 
  * Setup instructions:
  * 1. In Shopify Admin, go to Settings > Apps and sales channels > Develop apps
- * 2. Create a new app or use Headless channel
- * 3. Configure Customer Account API access
- * 4. Add your callback URL: {NEXT_PUBLIC_SITE_URL}/api/auth/callback
- * 5. Copy the Client ID to SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_ID
+ * 2. Create a new app with Customer Account API access
+ * 3. Add your callback URL in the app settings (e.g., https://yourdomain.com/api/auth/callback)
+ * 4. Copy the Client ID and Client Secret
+ * 5. Get your Shop ID from Shopify Admin URL or via Admin API
  */
 
 import { parseShopifyDomain } from "./parse-shopify-domain"
 
-// Get shop ID from domain (numeric ID needed for auth URLs)
+// Get shop ID from environment
 export function getShopId(): string {
-  // The shop ID is typically set as an environment variable
-  // You can find it in your Shopify Admin URL or via the Admin API
   return process.env.SHOPIFY_SHOP_ID || ""
+}
+
+// Auto-detect site URL from Vercel environment or fallback
+export function getSiteUrl(): string {
+  // Check for explicit override first
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL
+  }
+  
+  // Vercel production URL
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  }
+  
+  // Vercel preview/branch URL
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`
+  }
+  
+  // Vercel branch URL (for preview deployments)
+  if (process.env.VERCEL_BRANCH_URL) {
+    return `https://${process.env.VERCEL_BRANCH_URL}`
+  }
+  
+  // Local development fallback
+  return "http://localhost:3000"
 }
 
 export function getAuthConfig() {
   const rawDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || ""
   const storeDomain = rawDomain ? parseShopifyDomain(rawDomain) : ""
-  const clientId = process.env.SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_ID || ""
+  const clientId = process.env.SHOPIFY_CLIENT_ID || ""
+  const clientSecret = process.env.SHOPIFY_CLIENT_SECRET || ""
   const shopId = getShopId()
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  const siteUrl = getSiteUrl()
   
   return {
     storeDomain,
     clientId,
+    clientSecret,
     shopId,
     siteUrl,
     redirectUri: `${siteUrl}/api/auth/callback`,
@@ -117,19 +149,34 @@ export async function exchangeCodeForTokens(
 ): Promise<TokenResponse> {
   const config = getAuthConfig()
   
+  // Build credentials for Basic auth if client secret is available
+  const credentials = config.clientSecret 
+    ? Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64')
+    : null
+  
   const params = new URLSearchParams({
     grant_type: "authorization_code",
-    client_id: config.clientId,
     redirect_uri: config.redirectUri,
     code: code,
     code_verifier: codeVerifier,
   })
   
+  // Only add client_id to body if not using Basic auth
+  if (!credentials) {
+    params.append("client_id", config.clientId)
+  }
+  
+  const headers: Record<string, string> = {
+    "Content-Type": "application/x-www-form-urlencoded",
+  }
+  
+  if (credentials) {
+    headers["Authorization"] = `Basic ${credentials}`
+  }
+  
   const response = await fetch(config.tokenEndpoint, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
+    headers,
     body: params.toString(),
   })
   
@@ -145,17 +192,32 @@ export async function exchangeCodeForTokens(
 export async function refreshAccessToken(refreshToken: string): Promise<TokenResponse> {
   const config = getAuthConfig()
   
+  // Build credentials for Basic auth if client secret is available
+  const credentials = config.clientSecret 
+    ? Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64')
+    : null
+  
   const params = new URLSearchParams({
     grant_type: "refresh_token",
-    client_id: config.clientId,
     refresh_token: refreshToken,
   })
   
+  // Only add client_id to body if not using Basic auth
+  if (!credentials) {
+    params.append("client_id", config.clientId)
+  }
+  
+  const headers: Record<string, string> = {
+    "Content-Type": "application/x-www-form-urlencoded",
+  }
+  
+  if (credentials) {
+    headers["Authorization"] = `Basic ${credentials}`
+  }
+  
   const response = await fetch(config.tokenEndpoint, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
+    headers,
     body: params.toString(),
   })
   
