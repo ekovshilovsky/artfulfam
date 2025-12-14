@@ -10,61 +10,36 @@ import { getCachedPasswordStatus, setCachedPasswordStatus } from "./cache"
 
 export async function checkStoreAccessAction() {
   try {
-    const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN
-    const adminToken = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN
-
-    console.log("[v0] Checking store access...", { hasDomain: !!domain, hasAdminToken: !!adminToken })
-
-    if (!domain) {
-      console.error("[v0] NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN not set")
-      return { isPasswordProtected: false }
-    }
-
+    // Check cache first
     const cachedStatus = getCachedPasswordStatus()
     if (cachedStatus !== null) {
       return cachedStatus
     }
 
-    // If Admin API token is available, check password_enabled directly
-    if (adminToken) {
-      const shopDomain = domain.replace(".myshopify.com", "")
-      const url = `https://${shopDomain}.myshopify.com/admin/api/2024-10/shop.json`
+    // Use environment variable to determine if store is password protected
+    // This replaces the legacy Shopify Admin API check
+    const isPasswordProtected = process.env.STORE_PASSWORD_ENABLED === "true"
+    const hasStorePassword = !!process.env.SHOPIFY_STORE_PASSWORD
 
-      console.log("[v0] Calling Shopify Admin API:", { url, tokenLength: adminToken.length })
+    console.log("[v0] Checking store access...", {
+      isPasswordProtected,
+      hasStorePassword,
+    })
 
-      const response = await fetch(url, {
-        headers: {
-          "X-Shopify-Access-Token": adminToken,
-          "Content-Type": "application/json",
-        },
-      })
-
-      console.log("[v0] Admin API response status:", response.status)
-
-      if (response.ok) {
-        const data = await response.json()
-        const isPasswordProtected = data.shop?.password_enabled || false
-        console.log("[v0] Shop password_enabled:", isPasswordProtected)
-
-        setCachedPasswordStatus(isPasswordProtected)
-
-        return { isPasswordProtected }
-      } else {
-        const errorText = await response.text()
-        console.error("[v0] Admin API error:", { status: response.status, error: errorText })
-
-        // If we get an error, check if it's a scope issue
-        if (response.status === 403 || response.status === 401) {
-          console.error("[v0] Admin API access denied. Required scope: read_shop_data")
-        }
-      }
+    // If password protection is enabled but no password is configured, log warning
+    if (isPasswordProtected && !hasStorePassword) {
+      console.warn(
+        "[v0] STORE_PASSWORD_ENABLED is true but SHOPIFY_STORE_PASSWORD is not set. Password protection will be disabled.",
+      )
     }
 
-    // Fallback: no admin token or API call failed, assume not password protected
-    console.log("[v0] Falling back to no password protection")
-    const fallbackStatus = { isPasswordProtected: false }
-    setCachedPasswordStatus(false)
-    return fallbackStatus
+    // Only enable password protection if both the flag is set AND a password is configured
+    const effectivePasswordProtection = isPasswordProtected && hasStorePassword
+
+    // Cache the result
+    setCachedPasswordStatus(effectivePasswordProtection)
+
+    return { isPasswordProtected: effectivePasswordProtection }
   } catch (error) {
     console.error("[v0] Error checking store access:", error)
     return { isPasswordProtected: false }

@@ -10,6 +10,23 @@
 This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
 Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
 
+## Configuration
+
+### Environment Variables
+
+Copy `.env.example` to `.env.local` and configure the following variables:
+
+#### Required Variables
+- `NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN` - Your Shopify store domain (e.g., `your-store.myshopify.com`)
+- `SHOPIFY_STOREFRONT_ACCESS_TOKEN` - Shopify Storefront API access token
+- `SHOPIFY_ADMIN_ACCESS_TOKEN` - Shopify Admin API access token
+
+#### Password Protection (Optional)
+- `STORE_PASSWORD_ENABLED` - Set to `"true"` to enable password protection for the store
+- `SHOPIFY_STORE_PASSWORD` - The password users must enter to access the store (required when `STORE_PASSWORD_ENABLED` is `"true"`)
+
+**Note:** The password protection is controlled via environment variables and is independent of Shopify's built-in password protection feature. This gives you more flexibility to control access to your store from your application configuration.
+
 ## Deployment
 
 Your project is live at:
