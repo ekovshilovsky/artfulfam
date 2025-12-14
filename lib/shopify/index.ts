@@ -21,6 +21,13 @@ async function shopifyFetch<T>({
 }): Promise<{ data: T; errors?: any[] }> {
   try {
     const shop = getShopDomain()
+    
+    // During build, return empty data
+    if (!shop || shop.includes('your-store')) {
+      console.log("[Shopify] Build time - skipping API call")
+      return { data: {} as T }
+    }
+
     const session = await loadSession(shop)
 
     if (!session || !session.accessToken) {
