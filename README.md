@@ -22,68 +22,72 @@ A modern Next.js storefront for Shopify, featuring OAuth authentication and seam
 
 - Node.js 18+ and pnpm
 - A Shopify store (development or production)
-- Shopify Partner account (for creating custom apps)
+- Custom app credentials (CLIENT_ID and CLIENT_SECRET)
 
-### Installation
+### 5-Minute Setup
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd workspace
-```
-
-2. Install dependencies:
+1. **Install dependencies:**
 ```bash
 pnpm install
 ```
 
-3. Set up environment variables:
+2. **Set up environment variables:**
 ```bash
 cp .env.example .env.local
 ```
 
-4. Configure your `.env.local` file:
+Edit `.env.local`:
 ```env
 SHOPIFY_CLIENT_ID=your_client_id
 SHOPIFY_CLIENT_SECRET=your_client_secret
 NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN=your-store.myshopify.com
-SHOPIFY_STOREFRONT_ACCESS_TOKEN=your_storefront_token
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-5. Run the development server:
+3. **Configure app URLs in Shopify:**
+   - Go to your app in Shopify Admin
+   - Set App URL: `http://localhost:3000`
+   - Add redirect URL: `http://localhost:3000/api/auth/shopify/callback`
+
+4. **Start development server:**
 ```bash
 pnpm dev
 ```
 
-6. Authenticate with Shopify:
+5. **Complete OAuth authentication:**
 Visit `http://localhost:3000/api/auth/shopify/install?shop=your-store.myshopify.com`
+
+Done! Your app is ready to use. ✅
+
+**For detailed setup:** See [QUICKSTART.md](./QUICKSTART.md)
 
 ## Configuration
 
-### Shopify OAuth Setup
+### Modern Shopify Integration
 
-This app uses Shopify's OAuth authorization code grant flow for secure API access.
+This app uses **`@shopify/shopify-api`** (official package) with OAuth for secure API access.
 
 **Required Environment Variables:**
 
 - `SHOPIFY_CLIENT_ID` - Your app's Client ID (API key)
 - `SHOPIFY_CLIENT_SECRET` - Your app's Client Secret
 - `NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN` - Your store domain
-- `SHOPIFY_STOREFRONT_ACCESS_TOKEN` - Storefront API access token
 - `NEXT_PUBLIC_APP_URL` - Your app's URL
 
-**Setup Instructions:**
+**No Storefront token needed!** One OAuth token does everything.
 
-1. Create a custom app in Shopify Admin
-2. Configure API scopes (read_products, read_customers, write_customers, etc.)
-3. Get your OAuth credentials
-4. Set up redirect URLs
-5. Complete the OAuth flow
+**Quick Setup:**
 
-For detailed setup instructions, see:
-- [Shopify OAuth Setup Guide](./lib/shopify/README.md)
-- [Migration Guide](./MIGRATION_GUIDE.md)
+1. Create custom app in Partner Dashboard or Shopify Admin
+2. Get CLIENT_ID and CLIENT_SECRET
+3. Configure app redirect URLs
+4. Complete OAuth flow
+5. Start building!
+
+**Detailed Guides:**
+- [Quick Start Guide](./QUICKSTART.md) - Get running in 5 minutes
+- [Modern Migration Complete](./MODERN_MIGRATION_COMPLETE.md) - Full technical details
+- [Shopify OAuth Docs](https://shopify.dev/docs/apps/build/authentication-authorization)
 
 ## Architecture
 

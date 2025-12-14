@@ -7,7 +7,8 @@ import {
 } from "./index"
 import { cookies } from "next/headers"
 import { getCachedPasswordStatus, setCachedPasswordStatus } from "./cache"
-import { shopifyAdminFetch } from "./oauth"
+import { shopify, getShopDomain } from "./config"
+import { loadSession } from "./session-storage"
 
 export async function checkStoreAccessAction() {
   try {
@@ -27,13 +28,24 @@ export async function checkStoreAccessAction() {
 
     // Use OAuth authenticated Admin API to check password_enabled
     try {
-      const data = await shopifyAdminFetch<{ shop: { password_enabled?: boolean } }>(
-        "/admin/api/2024-10/shop.json"
-      )
+      const shop = getShopDomain()
+      const session = await loadSession(shop)
 
+      if (!session || !session.accessToken) {
+        console.log("[v0] No session, assuming not password protected")
+        return { isPasswordProtected: false }
+      }
+
+      // Create REST client
+      const client = new shopify.clients.Rest({ session })
+      const response = await client.get({
+        path: 'shop',
+      })
+
+      const data = response.body as { shop: { password_enabled?: boolean } }
       const isPasswordProtected = data.shop?.password_enabled || false
+      
       console.log("[v0] Shop password_enabled:", isPasswordProtected)
-
       setCachedPasswordStatus(isPasswordProtected)
 
       return { isPasswordProtected }
@@ -113,11 +125,25 @@ export async function createCustomerAction(email: string, tags: string[] = []) {
       return { success: false, error: "Shopify not configured" }
     }
 
+    const shop = getShopDomain()
+    const session = await loadSession(shop)
+
+    if (!session || !session.accessToken) {
+      return { success: false, error: "Not authenticated. Please complete OAuth flow." }
+    }
+
+    // Create REST client
+    const client = new shopify.clients.Rest({ session })
+
     console.log("[v0] Searching for existing customer with email:", email)
 
-    const searchUrl = `/admin/api/2024-10/customers/search.json?query=email:${encodeURIComponent(email)}`
+    // Search for existing customer
+    const searchResponse = await client.get({
+      path: 'customers/search',
+      query: { query: `email:${email}` },
+    })
 
-    const searchData = await shopifyAdminFetch<{ customers: any[] }>(searchUrl)
+    const searchData = searchResponse.body as { customers: any[] }
 
     if (searchData.customers && searchData.customers.length > 0) {
       const existingCustomer = searchData.customers[0]
@@ -137,11 +163,9 @@ export async function createCustomerAction(email: string, tags: string[] = []) {
       console.log("[v0] Updating customer with new information")
       const mergedTags = [...new Set([...existingTags, ...tags])]
 
-      const updateUrl = `/admin/api/2024-10/customers/${existingCustomer.id}.json`
-
-      const updateData = await shopifyAdminFetch<{ customer: any }>(updateUrl, {
-        method: "PUT",
-        body: JSON.stringify({
+      const updateResponse = await client.put({
+        path: `customers/${existingCustomer.id}`,
+        data: {
           customer: {
             id: existingCustomer.id,
             accepts_marketing: true,
@@ -152,20 +176,20 @@ export async function createCustomerAction(email: string, tags: string[] = []) {
             },
             tags: mergedTags.join(", "),
           },
-        }),
+        },
       })
 
+      const updateData = updateResponse.body as { customer: any }
       console.log("[v0] Customer updated successfully")
       return { success: true, customer: updateData.customer, updated: true }
     }
 
     console.log("[v0] Creating new customer with email:", email, "tags:", tags)
 
-    const createUrl = `/admin/api/2024-10/customers.json`
-
-    const createData = await shopifyAdminFetch<{ customer: any }>(createUrl, {
-      method: "POST",
-      body: JSON.stringify({
+    // Create new customer
+    const createResponse = await client.post({
+      path: 'customers',
+      data: {
         customer: {
           email,
           accepts_marketing: true,
@@ -176,9 +200,10 @@ export async function createCustomerAction(email: string, tags: string[] = []) {
           },
           tags: tags.join(", "),
         },
-      }),
+      },
     })
 
+    const createData = createResponse.body as { customer: any }
     console.log("[v0] Customer created successfully:", createData.customer?.id)
     return { success: true, customer: createData.customer }
   } catch (error) {

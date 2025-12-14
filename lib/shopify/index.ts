@@ -1,12 +1,17 @@
 import type { ProductCollectionSortKey, ProductSortKey, ShopifyCart, ShopifyCollection, ShopifyProduct } from "./types"
 import { parseShopifyDomain } from "./parse-shopify-domain"
 import { DEFAULT_PAGE_SIZE, DEFAULT_SORT_KEY } from "./constants"
-import { getStorefrontAccessToken } from "./oauth"
+import { shopify, createSession, getShopDomain } from "./config"
+import { loadSession } from "./session-storage"
 
 const rawStoreDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN
 const SHOPIFY_STORE_DOMAIN = rawStoreDomain ? parseShopifyDomain(rawStoreDomain) : "your-store.myshopify.com"
 const SHOPIFY_STOREFRONT_API_URL = `https://${SHOPIFY_STORE_DOMAIN}/api/2024-10/graphql.json`
 
+/**
+ * Fetch using Shopify Admin API with official client
+ * Uses Admin API token from OAuth for both admin and storefront queries
+ */
 async function shopifyFetch<T>({
   query,
   variables = {},
@@ -15,55 +20,33 @@ async function shopifyFetch<T>({
   variables?: Record<string, any>
 }): Promise<{ data: T; errors?: any[] }> {
   try {
-    const SHOPIFY_STOREFRONT_ACCESS_TOKEN = getStorefrontAccessToken()
+    const shop = getShopDomain()
+    const session = await loadSession(shop)
 
-    console.log("[v0] Shopify request details:", {
-      url: SHOPIFY_STOREFRONT_API_URL,
-      domain: SHOPIFY_STORE_DOMAIN,
-      hasToken: !!SHOPIFY_STOREFRONT_ACCESS_TOKEN,
-      tokenLength: SHOPIFY_STOREFRONT_ACCESS_TOKEN?.length || 0,
+    if (!session || !session.accessToken) {
+      throw new Error("No active session. Please complete OAuth flow at /api/auth/shopify/install?shop=" + shop)
+    }
+
+    console.log("[Shopify] API request:", {
+      shop,
+      hasToken: !!session.accessToken,
     })
 
-    if (!SHOPIFY_STOREFRONT_ACCESS_TOKEN) {
-      throw new Error("Missing SHOPIFY_STOREFRONT_ACCESS_TOKEN environment variable")
+    // Create GraphQL client using official package
+    const client = new shopify.clients.Graphql({ session })
+
+    // Execute query
+    const response = await client.request(query, { variables })
+
+    // Check for errors
+    if (response.errors) {
+      console.error("[Shopify] GraphQL errors:", response.errors)
+      throw new Error(`Shopify GraphQL errors: ${JSON.stringify(response.errors)}`)
     }
 
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      "X-Shopify-Storefront-Access-Token": SHOPIFY_STOREFRONT_ACCESS_TOKEN,
-    }
-
-    const response = await fetch(SHOPIFY_STOREFRONT_API_URL, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        query,
-        variables,
-      }),
-      cache: "no-store",
-    })
-
-    const responseText = await response.text()
-
-    if (!response.ok) {
-      console.error("[v0] Shopify API error:", {
-        status: response.status,
-        statusText: response.statusText,
-        body: responseText,
-      })
-      throw new Error(`Shopify API HTTP error! Status: ${response.status}, Body: ${responseText}`)
-    }
-
-    const json = JSON.parse(responseText)
-
-    if (json.errors) {
-      console.error("[v0] Shopify GraphQL errors:", json.errors)
-      throw new Error(`Shopify GraphQL errors: ${JSON.stringify(json.errors)}`)
-    }
-
-    return json
+    return { data: response.data as T, errors: response.errors }
   } catch (error) {
-    console.error("[v0] Shopify fetch error:", error)
+    console.error("[Shopify] Fetch error:", error)
     throw error
   }
 }
