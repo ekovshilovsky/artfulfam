@@ -5,7 +5,7 @@
  */
 
 import { shopifyApi, ApiVersion } from '@shopify/shopify-api'
-import '@shopify/shopify-api/adapters/node'
+import '@shopify/shopify-api/adapters/web-api'
 
 /**
  * Get Shopify API instance (lazy initialization for build compatibility)
