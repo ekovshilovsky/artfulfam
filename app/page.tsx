@@ -8,6 +8,9 @@ import { ComingSoonContent } from "@/components/coming-soon/coming-soon-content"
 import { cookies } from "next/headers"
 import { checkStoreAccessAction } from "@/lib/shopify/actions"
 
+// Force dynamic rendering since we check store access
+export const dynamic = 'force-dynamic'
+
 async function hasStoreAccess() {
   const cookieStore = await cookies()
   const hasAccessCookie = cookieStore.get("store_access")?.value === "granted"

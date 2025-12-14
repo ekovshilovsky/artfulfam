@@ -7,6 +7,9 @@ import { getArtistFromTags } from "@/lib/shopify/utils"
 import { notFound } from "next/navigation"
 import { ProductClient } from "./product-client"
 
+// Force dynamic rendering since we need OAuth session
+export const dynamic = 'force-dynamic'
+
 export default async function ProductPage({
   params,
 }: {

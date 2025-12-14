@@ -38,26 +38,32 @@ export async function storeSession(session: Session): Promise<void> {
  * Load session from cookies
  */
 export async function loadSession(shop: string): Promise<Session | null> {
-  const cookieStore = await cookies()
-  const accessToken = cookieStore.get(TOKEN_COOKIE_NAME)?.value
-  const scope = cookieStore.get(SCOPE_COOKIE_NAME)?.value
+  try {
+    const cookieStore = await cookies()
+    const accessToken = cookieStore.get(TOKEN_COOKIE_NAME)?.value
+    const scope = cookieStore.get(SCOPE_COOKIE_NAME)?.value
 
-  if (!accessToken) {
+    if (!accessToken) {
+      return null
+    }
+
+    // Create session object
+    const { shopify } = await import('./config')
+    const sessionId = shopify.session.getOfflineId(shop)
+    
+    return new shopify.session.Session({
+      id: sessionId,
+      shop,
+      state: 'active',
+      isOnline: false,
+      accessToken,
+      scope,
+    })
+  } catch (error) {
+    // During build, cookies() might fail - return null
+    console.log('[Session] Could not load session (likely build time)')
     return null
   }
-
-  // Create session object
-  const { shopify } = await import('./config')
-  const sessionId = shopify.session.getOfflineId(shop)
-  
-  return new shopify.session.Session({
-    id: sessionId,
-    shop,
-    state: 'active',
-    isOnline: false,
-    accessToken,
-    scope,
-  })
 }
 
 /**
