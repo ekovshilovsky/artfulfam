@@ -10,6 +10,7 @@ const fredoka = Fredoka({ subsets: ["latin"], variable: "--font-sans" })
 const caveat = Caveat({ subsets: ["latin"], variable: "--font-display" })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   title: "ArtsyFam - Kids Art Print on Demand",
   description: "Unique art creations by young artists, available on custom products through print-on-demand",
   generator: "v0.app",

@@ -12,6 +12,9 @@ export const metadata = {
   description: "Browse all artwork from our talented young artists",
 }
 
+// Force dynamic rendering since we need OAuth session
+export const dynamic = 'force-dynamic'
+
 export default async function ProductsPage() {
   const products = await getProducts({ first: 50 })
 
