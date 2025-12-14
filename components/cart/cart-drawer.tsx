@@ -2,14 +2,16 @@
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { ShoppingBag, X } from "lucide-react"
+import { ShoppingBag, X, User } from "lucide-react"
 import { useCart } from "./cart-context"
+import { useAuth } from "@/components/auth/auth-context"
 import Image from "next/image"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 
 export function CartDrawer() {
   const { items, removeItem, itemCount, totalPrice, checkoutUrl } = useCart()
+  const { isLoggedIn, customer, login } = useAuth()
 
   return (
     <Sheet>
@@ -85,6 +87,26 @@ export function CartDrawer() {
                 <span>Total</span>
                 <span>{totalPrice}</span>
               </div>
+              
+              {/* Login suggestion for faster checkout */}
+              {!isLoggedIn && (
+                <button
+                  onClick={login}
+                  className="w-full flex items-center justify-center gap-2 py-2 px-4 text-sm text-muted-foreground hover:text-foreground border border-dashed rounded-md transition-colors"
+                >
+                  <User className="h-4 w-4" />
+                  <span>Sign in with Shop for faster checkout</span>
+                </button>
+              )}
+              
+              {/* Show customer greeting if logged in */}
+              {isLoggedIn && customer && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <User className="h-4 w-4" />
+                  <span>Checking out as {customer.firstName || customer.email}</span>
+                </div>
+              )}
+              
               {checkoutUrl && (
                 <Button asChild size="lg" className="w-full">
                   <a href={checkoutUrl}>Proceed to Checkout</a>

@@ -74,7 +74,7 @@ export async function FeaturedProducts() {
                   </div>
                   <div className="p-4">
                     <h3 className="font-bold text-lg mb-1">{product.title}</h3>
-                    {artist && <p className="text-sm text-muted-foreground mb-3">{artist}</p>}
+                    {artist && <p className="text-sm text-muted-foreground mb-3">by {artist.name}</p>}
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-primary">{price}</span>
                       <Button size="sm" variant="outline">

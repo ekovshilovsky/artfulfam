@@ -123,6 +123,53 @@ export async function getCartAction(cartId: string) {
   }
 }
 
+export async function buyNowAction(merchandiseId: string, quantity = 1) {
+  try {
+    // Create a fresh cart for instant checkout
+    const { createCart, addCartLines } = await import("./index")
+    const cart = await createCart()
+    const updatedCart = await addCartLines(cart.id, [{ merchandiseId, quantity }])
+    return { success: true, checkoutUrl: updatedCart.checkoutUrl }
+  } catch (error) {
+    console.error("Error creating buy now checkout:", error)
+    return { success: false, error: "Failed to create checkout" }
+  }
+}
+
+export async function getShopLoginUrl() {
+  try {
+    const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN
+    if (!domain) {
+      return { success: false, error: "Store domain not configured" }
+    }
+    
+    // Construct the customer account URL for Shopify
+    const shopDomain = domain.replace(".myshopify.com", "")
+    const accountUrl = `https://${shopDomain}.myshopify.com/account`
+    
+    return { success: true, loginUrl: accountUrl }
+  } catch (error) {
+    console.error("Error getting shop login URL:", error)
+    return { success: false, error: "Failed to get login URL" }
+  }
+}
+
+export async function associateCartWithCustomerAction(cartId: string, customerAccessToken: string) {
+  try {
+    const { updateCartBuyerIdentity } = await import("./index")
+    const cart = await updateCartBuyerIdentity(cartId, customerAccessToken)
+    
+    if (!cart) {
+      return { success: false, error: "Failed to associate cart with customer" }
+    }
+    
+    return { success: true, cart }
+  } catch (error) {
+    console.error("Error associating cart with customer:", error)
+    return { success: false, error: "Failed to associate cart" }
+  }
+}
+
 export async function createCustomerAction(email: string, tags: string[] = []) {
   try {
     const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN
