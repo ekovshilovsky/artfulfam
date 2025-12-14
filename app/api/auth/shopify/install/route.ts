@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
       shop: sanitizedShop,
       callbackPath: '/api/auth/shopify/callback',
       isOnline: false, // Offline token (doesn't expire)
+      rawRequest: request as any,
     })
 
     // Store state in cookie for verification
