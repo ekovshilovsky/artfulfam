@@ -1,11 +1,10 @@
 /**
- * OAuth Install Route
- * Initiates the Shopify OAuth authorization code grant flow
+ * OAuth Install Route (Modern Implementation)
+ * Uses @shopify/shopify-api
  */
 
 import { NextRequest, NextResponse } from "next/server"
-import { getAuthorizationUrl } from "@/lib/shopify/oauth"
-import { randomBytes } from "crypto"
+import { shopify } from "@/lib/shopify/config"
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,33 +18,52 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Generate a random state for CSRF protection
-    const state = randomBytes(32).toString("hex")
+    // Sanitize shop domain
+    const sanitizedShop = shopify.utils.sanitizeShop(shop, true)
+    if (!sanitizedShop) {
+      return NextResponse.json(
+        { error: "Invalid shop domain" },
+        { status: 400 }
+      )
+    }
 
-    // Store state in cookie for verification in callback
-    const response = NextResponse.redirect(getAuthorizationUrl(shop, state))
-    
-    response.cookies.set("shopify_oauth_state", state, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 10, // 10 minutes
-      path: "/",
+    // Start OAuth flow
+    const authRoute = await shopify.auth.begin({
+      shop: sanitizedShop,
+      callbackPath: '/api/auth/shopify/callback',
+      isOnline: false, // Offline token (doesn't expire)
     })
 
-    response.cookies.set("shopify_shop", shop, {
+    // Store state in cookie for verification
+    const response = NextResponse.redirect(authRoute)
+    
+    // The state is included in the authRoute URL, extract it
+    const authUrl = new URL(authRoute)
+    const state = authUrl.searchParams.get('state')
+    
+    if (state) {
+      response.cookies.set('shopify_oauth_state', state, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 10, // 10 minutes
+        path: '/',
+      })
+    }
+
+    response.cookies.set('shopify_shop', sanitizedShop, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 10, // 10 minutes
-      path: "/",
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 10,
+      path: '/',
     })
 
     return response
   } catch (error) {
     console.error("[OAuth Install] Error:", error)
     return NextResponse.json(
-      { error: "Failed to initiate OAuth flow" },
+      { error: "Failed to initiate OAuth flow", details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
