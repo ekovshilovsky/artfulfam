@@ -7,6 +7,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { shopify } from "@/lib/shopify/config"
 import { storeSession } from "@/lib/shopify/session-storage-kv"
 
+// Ensure Node.js runtime
+export const runtime = 'nodejs'
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams

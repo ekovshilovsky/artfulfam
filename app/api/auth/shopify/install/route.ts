@@ -7,6 +7,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { shopify } from "@/lib/shopify/config"
 import { parseShopifyDomain } from "@/lib/shopify/parse-shopify-domain"
 
+// Ensure Node.js runtime so Shopify's node adapter assumptions hold
+export const runtime = 'nodejs'
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -33,11 +36,25 @@ export async function GET(request: NextRequest) {
     }
 
     // Start OAuth flow
+    // Provide a minimal Node-like response shim to satisfy the SDK
+    const resShim: any = {
+      statusCode: 302,
+      _headers: {} as Record<string, string | string[]>,
+      setHeader(name: string, value: any) {
+        this._headers[name.toLowerCase()] = value
+      },
+      getHeader(name: string) {
+        return this._headers[name.toLowerCase()]
+      },
+      end() {},
+    }
+
     const authRoute = await shopify.auth.begin({
       shop: sanitizedShop,
       callbackPath: '/api/auth/shopify/callback',
       isOnline: false, // Offline token (doesn't expire)
       rawRequest: request as any,
+      rawResponse: resShim,
     })
 
     // Store state in cookie for verification
