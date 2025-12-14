@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { kv } from '@vercel/kv'
+import { hasSession } from './lib/shopify/session-storage-kv'
 
 /**
  * Proxy handles:
@@ -21,8 +21,8 @@ export async function proxy(request: NextRequest) {
   }
 
   try {
-    // 1. Check if OAuth token exists in KV (shared across all users)
-    const hasOAuthToken = await kv.exists('shopify:access_token')
+    // 1. Check if OAuth token exists in Redis (shared across all users)
+    const hasOAuthToken = await hasSession()
 
     if (!hasOAuthToken) {
       const shop = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN
