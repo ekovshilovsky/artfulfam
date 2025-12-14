@@ -5,24 +5,29 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { shopify } from "@/lib/shopify/config"
+import { parseShopifyDomain } from "@/lib/shopify/parse-shopify-domain"
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const shop = searchParams.get("shop")
+    const rawShop = searchParams.get("shop") || process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN || ""
 
-    if (!shop) {
+    // Normalize input: decode, trim, drop newlines, lowercase, add .myshopify.com if missing
+    const cleaned = decodeURIComponent(rawShop).trim().replace(/[\n\r]/g, "").toLowerCase()
+    if (!cleaned) {
       return NextResponse.json(
         { error: "Missing shop parameter" },
         { status: 400 }
       )
     }
 
+    const candidate = parseShopifyDomain(cleaned)
+
     // Sanitize shop domain
-    const sanitizedShop = shopify.utils.sanitizeShop(shop, true)
+    const sanitizedShop = shopify.utils.sanitizeShop(candidate, true)
     if (!sanitizedShop) {
       return NextResponse.json(
-        { error: "Invalid shop domain" },
+        { error: "Invalid shop domain", details: candidate },
         { status: 400 }
       )
     }
