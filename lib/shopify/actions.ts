@@ -8,7 +8,7 @@ import {
 import { cookies } from "next/headers"
 import { getCachedPasswordStatus, setCachedPasswordStatus } from "./cache"
 import { shopify, getShopDomain } from "./config"
-import { loadSession } from "./session-storage"
+import { loadSession } from "./session-storage-kv"
 
 export async function checkStoreAccessAction() {
   try {

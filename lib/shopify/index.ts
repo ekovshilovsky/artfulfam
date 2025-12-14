@@ -2,7 +2,7 @@ import type { ProductCollectionSortKey, ProductSortKey, ShopifyCart, ShopifyColl
 import { parseShopifyDomain } from "./parse-shopify-domain"
 import { DEFAULT_PAGE_SIZE, DEFAULT_SORT_KEY } from "./constants"
 import { shopify, createSession, getShopDomain } from "./config"
-import { loadSession } from "./session-storage"
+import { loadSession } from "./session-storage-kv"
 
 const rawStoreDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN
 const SHOPIFY_STORE_DOMAIN = rawStoreDomain ? parseShopifyDomain(rawStoreDomain) : "your-store.myshopify.com"

@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { shopify } from "@/lib/shopify/config"
-import { storeSession } from "@/lib/shopify/session-storage"
+import { storeSession } from "@/lib/shopify/session-storage-kv"
 
 export async function GET(request: NextRequest) {
   try {
