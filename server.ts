@@ -1,15 +1,11 @@
 // Virtual entry point for the app
 import * as remixBuild from 'virtual:react-router/server-build';
 import {
-  cartGetIdDefault,
-  cartSetIdDefault,
-  createCartHandler,
-  createStorefrontClient,
+  createHydrogenContext,
   storefrontRedirect,
 } from '@shopify/hydrogen';
 import {
   createRequestHandler,
-  getStorefrontHeaders,
 } from '@shopify/hydrogen/oxygen';
 import {
   createCookieSessionStorage,
@@ -34,48 +30,44 @@ export default {
         throw new Error('SESSION_SECRET environment variable is not set');
       }
 
-      const waitUntil = (p: Promise<any>) => executionContext.waitUntil(p);
+      const waitUntil = executionContext.waitUntil.bind(executionContext);
       const [cache, session] = await Promise.all([
         caches.open('hydrogen'),
         HydrogenSession.init(request, [env.SESSION_SECRET]),
       ]);
 
       /**
-       * Create Hydrogen's Storefront client.
+       * Create Hydrogen context which includes storefront client, cart, and more.
+       * This returns a RouterContextProvider compatible with React Router 7.
        */
-      const {storefront} = createStorefrontClient({
+      const hydrogenContext = createHydrogenContext({
+        env,
+        request,
         cache,
         waitUntil,
+        session,
         i18n: {language: 'EN', country: 'US'},
-        publicStorefrontToken: env.PUBLIC_STOREFRONT_API_TOKEN,
-        privateStorefrontToken: env.PRIVATE_STOREFRONT_API_TOKEN,
-        storeDomain: env.PUBLIC_STORE_DOMAIN,
-        storefrontId: env.PUBLIC_STOREFRONT_ID,
-        storefrontHeaders: getStorefrontHeaders(request),
-      });
-
-      /*
-       * Create a cart handler that will be used to
-       * create and update the cart in the session.
-       */
-      const cart = createCartHandler({
-        storefront,
-        getCartId: cartGetIdDefault(request.headers),
-        setCartId: cartSetIdDefault(),
-        cartQueryFragment: CART_QUERY_FRAGMENT,
+        cart: {
+          queryFragment: CART_QUERY_FRAGMENT,
+        },
       });
 
       /**
-       * Create a Remix request handler and pass
-       * Hydrogen's Storefront client to the loader context.
+       * Create a React Router request handler and pass
+       * Hydrogen's context to the loader context.
        */
       const handleRequest = createRequestHandler({
         build: remixBuild,
         mode: process.env.NODE_ENV,
-        getLoadContext: () => ({session, storefront, env, cart}),
+        getLoadContext: () => hydrogenContext,
       });
 
       const response = await handleRequest(request);
+
+      // Handle session commit if session was modified
+      if (session.isPending) {
+        response.headers.set('Set-Cookie', await session.commit());
+      }
 
       if (response.status === 404) {
         /**
@@ -83,7 +75,7 @@ export default {
          * If the redirect doesn't exist, then `storefrontRedirect`
          * will pass through the 404 response.
          */
-        return storefrontRedirect({request, response, storefront});
+        return storefrontRedirect({request, response, storefront: hydrogenContext.storefront});
       }
 
       return response;
@@ -101,6 +93,8 @@ export default {
  * swap out the cookie-based implementation with something else!
  */
 export class HydrogenSession {
+  public isPending = false;
+
   constructor(
     private sessionStorage: SessionStorage,
     private session: Session,
@@ -135,18 +129,22 @@ export class HydrogenSession {
   }
 
   flash(key: string, value: any) {
+    this.isPending = true;
     this.session.flash(key, value);
   }
 
   unset(key: string) {
+    this.isPending = true;
     this.session.unset(key);
   }
 
   set(key: string, value: any) {
+    this.isPending = true;
     this.session.set(key, value);
   }
 
   commit() {
+    this.isPending = false;
     return this.sessionStorage.commitSession(this.session);
   }
 }
