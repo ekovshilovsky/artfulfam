@@ -22,7 +22,7 @@ import type {CartLineInput} from '@shopify/hydrogen/storefront-api-types';
 import {getVariantUrl} from '~/utils';
 
 export const meta: MetaFunction = ({data}) => {
-  return [{title: `Hydrogen | ${data.product.title}`}];
+  return [{title: `${data.product.title} | ArtfulFam`}];
 };
 
 export async function loader({params, request, context}: LoaderFunctionArgs) {
@@ -107,30 +107,48 @@ export default function Product() {
   const {product, variants} = useLoaderData<typeof loader>();
   const {selectedVariant} = product;
   return (
-    <div className="product">
-      <ProductImage image={selectedVariant?.image} />
-      <ProductMain
-        selectedVariant={selectedVariant}
-        product={product}
-        variants={variants}
-      />
+    <div className="container mx-auto px-4 py-8 md:py-12">
+      <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+        <ProductImages product={product} selectedVariant={selectedVariant} />
+        <ProductMain
+          selectedVariant={selectedVariant}
+          product={product}
+          variants={variants}
+        />
+      </div>
     </div>
   );
 }
 
-function ProductImage({image}: {image: ProductVariantFragment['image']}) {
+function ProductImages({
+  product,
+  selectedVariant,
+}: {
+  product: ProductFragment;
+  selectedVariant: ProductFragment['selectedVariant'];
+}) {
+  const image = selectedVariant?.image || product.variants.nodes[0]?.image;
+  
   if (!image) {
-    return <div className="product-image" />;
+    return (
+      <div className="aspect-square bg-muted rounded-lg flex items-center justify-center">
+        <span className="text-muted-foreground">No image available</span>
+      </div>
+    );
   }
+  
   return (
-    <div className="product-image">
-      <Image
-        alt={image.altText || 'Product Image'}
-        aspectRatio="1/1"
-        data={image}
-        key={image.id}
-        sizes="(min-width: 45em) 50vw, 100vw"
-      />
+    <div className="space-y-4">
+      <div className="aspect-square overflow-hidden rounded-lg border-2 border-border">
+        <Image
+          alt={image.altText || product.title}
+          aspectRatio="1/1"
+          data={image}
+          key={image.id}
+          sizes="(min-width: 768px) 50vw, 100vw"
+          className="object-cover w-full h-full"
+        />
+      </div>
     </div>
   );
 }
@@ -144,12 +162,18 @@ function ProductMain({
   selectedVariant: ProductFragment['selectedVariant'];
   variants: Promise<ProductVariantsQuery>;
 }) {
-  const {title, descriptionHtml} = product;
+  const {title, descriptionHtml, vendor} = product;
   return (
-    <div className="product-main">
-      <h1>{title}</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl md:text-4xl font-bold mb-2 font-display">{title}</h1>
+        {vendor && (
+          <p className="text-sm text-muted-foreground">by {vendor}</p>
+        )}
+      </div>
+      
       <ProductPrice selectedVariant={selectedVariant} />
-      <br />
+      
       <Suspense
         fallback={
           <ProductForm
@@ -172,14 +196,24 @@ function ProductMain({
           )}
         </Await>
       </Suspense>
-      <br />
-      <br />
-      <p>
-        <strong>Description</strong>
-      </p>
-      <br />
-      <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-      <br />
+      
+      {descriptionHtml && (
+        <div className="border-t border-border pt-6">
+          <h2 className="text-lg font-bold mb-3">Description</h2>
+          <div 
+            className="prose prose-sm max-w-none text-muted-foreground"
+            dangerouslySetInnerHTML={{__html: descriptionHtml}} 
+          />
+        </div>
+      )}
+      
+      <div className="border-t border-border pt-6">
+        <h2 className="text-lg font-bold mb-3">About This Artwork</h2>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Each design is carefully created by young artists and printed on-demand on quality products. 
+          Your purchase supports creativity and helps kids share their art with the world.
+        </p>
+      </div>
     </div>
   );
 }
@@ -190,20 +224,36 @@ function ProductPrice({
   selectedVariant: ProductFragment['selectedVariant'];
 }) {
   return (
-    <div className="product-price">
+    <div className="flex items-center gap-3">
       {selectedVariant?.compareAtPrice ? (
         <>
-          <p>Sale</p>
-          <br />
-          <div className="product-price-on-sale">
-            {selectedVariant ? <Money data={selectedVariant.price} /> : null}
-            <s>
-              <Money data={selectedVariant.compareAtPrice} />
-            </s>
-          </div>
+          <span className="text-3xl font-bold text-primary">
+            {selectedVariant && <Money data={selectedVariant.price} />}
+          </span>
+          <span className="text-xl text-muted-foreground line-through">
+            <Money data={selectedVariant.compareAtPrice} />
+          </span>
+          <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
+            Sale
+          </span>
         </>
       ) : (
-        selectedVariant?.price && <Money data={selectedVariant?.price} />
+        selectedVariant?.price && (
+          <>
+            <span className="text-3xl font-bold text-primary">
+              <Money data={selectedVariant.price} />
+            </span>
+            {selectedVariant.availableForSale ? (
+              <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                In Stock
+              </span>
+            ) : (
+              <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
+                Out of Stock
+              </span>
+            )}
+          </>
+        )
       )}
     </div>
   );
@@ -219,7 +269,7 @@ function ProductForm({
   variants: Array<ProductVariantFragment>;
 }) {
   return (
-    <div className="product-form">
+    <div className="space-y-6">
       <VariantSelector
         handle={product.handle}
         options={product.options}
@@ -227,7 +277,7 @@ function ProductForm({
       >
         {({option}) => <ProductOptions key={option.name} option={option} />}
       </VariantSelector>
-      <br />
+      
       <AddToCartButton
         disabled={!selectedVariant || !selectedVariant.availableForSale}
         onClick={() => {
@@ -252,29 +302,36 @@ function ProductForm({
 
 function ProductOptions({option}: {option: VariantOption}) {
   return (
-    <div className="product-options" key={option.name}>
-      <h5>{option.name}</h5>
-      <div className="product-options-grid">
+    <div className="space-y-2" key={option.name}>
+      <h3 className="text-sm font-medium">{option.name}</h3>
+      <div className="flex flex-wrap gap-2">
         {option.values.map(({value, isAvailable, isActive, to}) => {
           return (
             <Link
-              className="product-options-item"
               key={option.name + value}
               prefetch="intent"
               preventScrollReset
               replace
               to={to}
-              style={{
-                border: isActive ? '1px solid black' : '1px solid transparent',
-                opacity: isAvailable ? 1 : 0.3,
-              }}
+              className={`
+                px-4 py-2 rounded-md border-2 text-sm font-medium transition-colors
+                ${
+                  isActive
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-border hover:border-primary'
+                }
+                ${
+                  !isAvailable
+                    ? 'opacity-30 cursor-not-allowed'
+                    : 'cursor-pointer'
+                }
+              `}
             >
               {value}
             </Link>
           );
         })}
       </div>
-      <br />
     </div>
   );
 }
@@ -305,6 +362,7 @@ function AddToCartButton({
             type="submit"
             onClick={onClick}
             disabled={disabled ?? fetcher.state !== 'idle'}
+            className="w-full inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {children}
           </button>
