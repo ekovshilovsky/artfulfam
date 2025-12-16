@@ -22,21 +22,41 @@ export default function ComingSoon() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4" style={{background: 'linear-gradient(to bottom right, var(--secondary), var(--background), var(--muted))'}}>
+      {/* Decorative elements */}
+      <div className="absolute top-20 left-10 w-20 h-20 bg-accent/20 rounded-full blur-2xl animate-pulse" />
+      <div className="absolute bottom-20 right-10 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
+      
+      <div className="max-w-2xl w-full space-y-8 relative z-10">
         {/* Logo/Branding */}
         <div className="text-center">
-          <h1 className="text-5xl font-bold text-gray-900 mb-2">ArtfulFam</h1>
-          <p className="text-lg text-gray-600">
+          <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent px-4 py-2 rounded-full mb-6 animate-fade-in">
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+              />
+            </svg>
+            <span className="text-sm font-medium">Art by Kids, For Everyone</span>
+          </div>
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 font-display">ArtfulFam</h1>
+          <p className="text-xl text-muted-foreground font-handwriting">
             Celebrating creativity, one masterpiece at a time
           </p>
         </div>
 
         {/* Coming Soon Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
-          <div className="text-center space-y-2">
-            <h2 className="text-3xl font-bold text-gray-900">Coming Soon</h2>
-            <p className="text-gray-600">
+        <div className="bg-card/80 backdrop-blur-sm border-2 border-border rounded-2xl shadow-xl p-8 md:p-10 space-y-6">
+          <div className="text-center space-y-3">
+            <h2 className="text-3xl md:text-4xl font-bold font-display">Coming Soon</h2>
+            <p className="text-lg text-muted-foreground leading-relaxed">
               We're working hard to bring you something special. Sign up to be
               notified when we launch!
             </p>
@@ -59,7 +79,7 @@ export default function ComingSoon() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-sm text-gray-500">
+        <p className="text-center text-sm text-muted-foreground">
           © {new Date().getFullYear()} ArtfulFam. All rights reserved.
         </p>
       </div>

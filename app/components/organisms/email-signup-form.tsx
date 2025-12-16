@@ -56,7 +56,7 @@ export function EmailSignupForm({
         error={error}
         required
       />
-      <Button type="submit" disabled={isSubmitting} className="w-full">
+      <Button type="submit" disabled={isSubmitting} className="w-full h-11 text-base">
         {isSubmitting ? 'Signing up...' : 'Notify Me'}
       </Button>
     </form>

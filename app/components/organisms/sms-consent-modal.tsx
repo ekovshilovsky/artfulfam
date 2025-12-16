@@ -91,15 +91,15 @@ export function SmsConsentModal({open, onClose, email}: SmsConsentModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Stay Updated via SMS</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-2xl font-display">Stay Updated via SMS</DialogTitle>
+          <DialogDescription className="text-base">
             Get notified when we launch! We'll send you a text message.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-5 mt-2">
           <FormField
             id="phone"
             label="Phone Number"
@@ -113,10 +113,10 @@ export function SmsConsentModal({open, onClose, email}: SmsConsentModalProps) {
           <CheckboxField
             id="sms-consent"
             label={
-              <>
+              <span className="text-sm leading-relaxed">
                 I consent to receive SMS messages from ArtfulFam. Message and
                 data rates may apply. Reply STOP to unsubscribe.
-              </>
+              </span>
             }
             checked={consent}
             onCheckedChange={setConsent}
@@ -128,20 +128,20 @@ export function SmsConsentModal({open, onClose, email}: SmsConsentModalProps) {
             </Alert>
           )}
 
-          <div className="flex gap-2">
+          <div className="flex gap-3 pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={handleSkip}
               disabled={isSubmitting}
-              className="flex-1"
+              className="flex-1 h-11"
             >
               Skip
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting || !consent}
-              className="flex-1"
+              className="flex-1 h-11"
             >
               {isSubmitting ? 'Updating...' : 'Submit'}
             </Button>

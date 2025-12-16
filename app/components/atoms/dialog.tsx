@@ -22,20 +22,20 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
 
 export function DialogContent({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`relative z-50 bg-card p-6 rounded-lg shadow-xl border max-w-lg w-full mx-4 ${className}`}>
+    <div className={`relative z-50 bg-card p-6 md:p-8 rounded-2xl shadow-2xl border-2 border-border max-w-lg w-full mx-4 ${className}`}>
       {children}
     </div>
   );
 }
 
 export function DialogHeader({ children }: { children: React.ReactNode }) {
-  return <div className="mb-4">{children}</div>;
+  return <div className="mb-6 space-y-2">{children}</div>;
 }
 
 export function DialogTitle({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <h2 className={`text-xl font-bold ${className}`}>{children}</h2>;
+  return <h2 className={`text-2xl font-bold ${className}`}>{children}</h2>;
 }
 
-export function DialogDescription({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-muted-foreground mt-2">{children}</p>;
+export function DialogDescription({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return <p className={`text-sm text-muted-foreground mt-1 ${className}`}>{children}</p>;
 }

@@ -55,7 +55,7 @@ export function PasswordUnlockForm({
         error={error}
         required
       />
-      <Button type="submit" disabled={isSubmitting} className="w-full">
+      <Button type="submit" disabled={isSubmitting} className="w-full h-11 text-base">
         {isSubmitting ? 'Unlocking...' : 'Unlock Store'}
       </Button>
     </form>
