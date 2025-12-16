@@ -8,6 +8,14 @@ export const handle = {
   skipLayout: true,
 };
 
+export const meta = () => {
+  return [
+    {httpEquiv: 'Cache-Control', content: 'no-cache, no-store, must-revalidate'},
+    {httpEquiv: 'Pragma', content: 'no-cache'},
+    {httpEquiv: 'Expires', content: '0'},
+  ];
+};
+
 export default function ComingSoon() {
   const [showSmsModal, setShowSmsModal] = useState(false);
   const [userEmail, setUserEmail] = useState('');
