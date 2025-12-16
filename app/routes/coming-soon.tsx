@@ -27,7 +27,12 @@ export default function ComingSoon() {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center overflow-auto" style={{background: 'linear-gradient(to bottom right, var(--secondary), var(--background), var(--muted))'}}>
+    <>
+      <style>{`
+        body { margin: 0 !important; padding: 0 !important; }
+        body > * { margin: 0 !important; }
+      `}</style>
+      <div className="fixed inset-0 flex items-center justify-center overflow-auto" style={{background: 'linear-gradient(to bottom right, var(--secondary), var(--background), var(--muted))', margin: 0, padding: 0}}>
       {/* Decorative elements */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-accent/20 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-20 right-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
@@ -88,14 +93,15 @@ export default function ComingSoon() {
         <p className="text-center text-sm text-muted-foreground">
           © {new Date().getFullYear()} ArtfulFam. All rights reserved.
         </p>
-      </div>
+        </div>
 
-      {/* SMS Consent Modal */}
-      <SmsConsentModal
-        open={showSmsModal}
-        onClose={() => setShowSmsModal(false)}
-        email={userEmail}
-      />
-    </div>
+        {/* SMS Consent Modal */}
+        <SmsConsentModal
+          open={showSmsModal}
+          onClose={() => setShowSmsModal(false)}
+          email={userEmail}
+        />
+      </div>
+    </>
   );
 }
