@@ -1,6 +1,5 @@
 {
-  "installCommand": "pnpm install",
-  "buildCommand": "pnpm run build",
-  "outputDirectory": "dist",
-  "framework": null
+  "framework": "shopify-hydrogen",
+  "buildCommand": "pnpm build",
+  "outputDirectory": "dist"
 }
