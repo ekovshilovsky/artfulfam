@@ -75,7 +75,7 @@ export default function ComingSoon() {
               <div className="w-full border-t border-primary-foreground/20" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-primary/20 opacity-90">
+              <span className="px-3 bg-gradient-to-br from-primary to-accent opacity-90">
                 Already have access?
               </span>
             </div>
