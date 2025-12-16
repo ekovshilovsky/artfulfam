@@ -8,16 +8,16 @@
   --color-light: #fff;
   
   /* Color theme from first-version */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.145 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.439 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.145 0 0);
+  --background: oklch(0.985 0.01 75);
+  --foreground: oklch(0.25 0.02 30);
+  --primary: oklch(0.45 0.15 280);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.88 0.04 85);
+  --secondary-foreground: oklch(0.25 0.02 30);
+  --muted: oklch(0.95 0.01 75);
+  --muted-foreground: oklch(0.55 0.02 30);
+  --accent: oklch(0.75 0.18 340);
+  --accent-foreground: oklch(0.99 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.922 0 0);

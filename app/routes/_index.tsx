@@ -9,6 +9,8 @@ import type {
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
 import {Hero} from '~/components/Hero';
+import {AboutSection} from '~/components/AboutSection';
+import {Newsletter} from '~/components/Newsletter';
 
 export const meta: MetaFunction = () => {
   return [{title: 'ArtfulFam | Kids Art Print on Demand'}];
@@ -29,6 +31,8 @@ export default function Homepage() {
     <main className="min-h-screen">
       <Hero />
       <RecommendedProducts products={data.recommendedProducts} />
+      <AboutSection />
+      <Newsletter />
     </main>
   );
 }
