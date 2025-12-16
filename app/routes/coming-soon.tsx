@@ -35,7 +35,7 @@ export default function ComingSoon() {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center overflow-hidden" style={{background: 'linear-gradient(to bottom right, var(--secondary), var(--background), var(--muted))'}}>
+    <div className="fixed inset-0 flex items-center justify-center overflow-y-auto" style={{background: 'linear-gradient(to bottom right, var(--secondary), var(--background), var(--muted))'}}>
       {/* Decorative elements */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-accent/20 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-20 right-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
