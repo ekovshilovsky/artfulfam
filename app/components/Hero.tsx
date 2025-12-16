@@ -5,7 +5,7 @@ export function Hero() {
     <section className="relative overflow-hidden bg-gradient-to-br from-secondary via-background to-muted py-20 md:py-32">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full mb-6 animate-fade-in">
+          <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent px-4 py-2 rounded-full mb-6 animate-fade-in">
             <svg
               className="h-4 w-4"
               fill="none"
