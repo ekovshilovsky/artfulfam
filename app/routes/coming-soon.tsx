@@ -3,10 +3,9 @@ import {EmailSignupForm} from '~/components/organisms/email-signup-form';
 import {PasswordUnlockForm} from '~/components/organisms/password-unlock-form';
 import {SmsConsentModal} from '~/components/organisms/sms-consent-modal';
 
-// No layout wrapper for coming soon page
+// Skip layout entirely for coming soon page
 export const handle = {
-  hideHeader: true,
-  hideFooter: true,
+  skipLayout: true,
 };
 
 export default function ComingSoon() {

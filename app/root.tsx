@@ -95,6 +95,9 @@ export async function loader({context, request}: LoaderFunctionArgs) {
 
 export default function App() {
   const data = useLoaderData<typeof loader>();
+  const matches = useMatches();
+  const lastMatch = matches[matches.length - 1];
+  const skipLayout = lastMatch?.handle?.skipLayout;
 
   return (
     <html lang="en">
@@ -105,9 +108,13 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <Layout {...data}>
+        {skipLayout ? (
           <Outlet />
-        </Layout>
+        ) : (
+          <Layout {...data}>
+            <Outlet />
+          </Layout>
+        )}
         <ScrollRestoration />
         <Scripts />
       </body>
