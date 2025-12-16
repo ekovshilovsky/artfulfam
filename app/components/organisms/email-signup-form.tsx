@@ -1,7 +1,4 @@
 import {useState} from 'react';
-import {Button} from '../atoms/button';
-import {Alert, AlertDescription} from '../atoms/alert';
-import {FormField} from '../molecules/form-field';
 
 interface EmailSignupFormProps {
   onSuccess?: (data: {email: string; isNewCustomer: boolean}) => void;
@@ -46,19 +43,25 @@ export function EmailSignupForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <FormField
-        id="email"
-        label="Email Address"
-        type="email"
-        placeholder="you@example.com"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        error={error}
-        required
-      />
-      <Button type="submit" disabled={isSubmitting} className="w-full h-11 text-base">
+      <div className="space-y-2">
+        <input
+          id="email"
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="bg-background text-foreground border-0 h-12 w-full rounded-md px-4 focus:outline-none focus:ring-2 focus:ring-primary-foreground"
+        />
+        {error && <p className="text-sm text-destructive-foreground bg-destructive/20 px-3 py-2 rounded-md">{error}</p>}
+      </div>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full h-12 px-8 rounded-md bg-secondary text-secondary-foreground font-medium hover:bg-secondary/90 transition-colors disabled:opacity-50"
+      >
         {isSubmitting ? 'Signing up...' : 'Notify Me'}
-      </Button>
+      </button>
     </form>
   );
 }

@@ -28,7 +28,7 @@ export default function ComingSoon() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden" style={{background: 'linear-gradient(to bottom right, var(--secondary), var(--background), var(--muted))'}}>
+    <div className="fixed inset-0 flex items-center justify-center overflow-auto" style={{background: 'linear-gradient(to bottom right, var(--secondary), var(--background), var(--muted))'}}>
       {/* Decorative elements */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-accent/20 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-20 right-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
@@ -60,10 +60,10 @@ export default function ComingSoon() {
         </div>
 
         {/* Coming Soon Card */}
-        <div className="bg-card/80 backdrop-blur-sm border-2 border-border rounded-2xl shadow-xl p-8 md:p-10 space-y-6">
+        <div className="bg-gradient-to-br from-primary to-accent text-primary-foreground rounded-2xl shadow-xl p-8 md:p-10 space-y-6">
           <div className="text-center space-y-3">
             <h2 className="text-3xl md:text-4xl font-bold font-display">Coming Soon</h2>
-            <p className="text-lg text-muted-foreground leading-relaxed">
+            <p className="text-lg opacity-90 leading-relaxed">
               We're working hard to bring you something special. Sign up to be
               notified when we launch!
             </p>
@@ -73,10 +73,10 @@ export default function ComingSoon() {
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
+              <div className="w-full border-t border-primary-foreground/20" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">
+              <span className="px-2 bg-primary/20 opacity-90">
                 Already have access?
               </span>
             </div>

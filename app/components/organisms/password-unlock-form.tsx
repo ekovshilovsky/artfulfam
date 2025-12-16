@@ -1,6 +1,4 @@
 import {useState} from 'react';
-import {Button} from '../atoms/button';
-import {FormField} from '../molecules/form-field';
 
 interface PasswordUnlockFormProps {
   onSuccess?: () => void;
@@ -45,19 +43,25 @@ export function PasswordUnlockForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <FormField
-        id="password"
-        label="Store Password"
-        type="password"
-        placeholder="Enter password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        error={error}
-        required
-      />
-      <Button type="submit" disabled={isSubmitting} className="w-full h-11 text-base">
+      <div className="space-y-2">
+        <input
+          id="password"
+          type="password"
+          placeholder="Enter password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          className="bg-background text-foreground border-0 h-12 w-full rounded-md px-4 focus:outline-none focus:ring-2 focus:ring-primary-foreground"
+        />
+        {error && <p className="text-sm text-destructive-foreground bg-destructive/20 px-3 py-2 rounded-md">{error}</p>}
+      </div>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full h-12 px-8 rounded-md bg-secondary text-secondary-foreground font-medium hover:bg-secondary/90 transition-colors disabled:opacity-50"
+      >
         {isSubmitting ? 'Unlocking...' : 'Unlock Store'}
-      </Button>
+      </button>
     </form>
   );
 }
