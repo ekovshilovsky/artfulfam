@@ -7,7 +7,6 @@ import {
   DialogDescription,
 } from '../atoms/dialog';
 import {Button} from '../atoms/button';
-import {FormField} from '../molecules/form-field';
 import {CheckboxField} from '../molecules/checkbox-field';
 import {Alert, AlertDescription} from '../atoms/alert';
 
@@ -22,6 +21,30 @@ export function SmsConsentModal({open, onClose, email}: SmsConsentModalProps) {
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Format phone number as user types
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-digits
+    const cleaned = value.replace(/\D/g, '');
+    
+    // Limit to 10 digits (US phone number)
+    const limited = cleaned.slice(0, 10);
+    
+    // Format as (XXX) XXX-XXXX
+    if (limited.length <= 3) {
+      return limited;
+    } else if (limited.length <= 6) {
+      return `(${limited.slice(0, 3)}) ${limited.slice(3)}`;
+    } else {
+      return `(${limited.slice(0, 3)}) ${limited.slice(3, 6)}-${limited.slice(6)}`;
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhone(formatted);
+    setError(''); // Clear error when user types
+  };
 
   // Handle iOS keyboard viewport issues
   useEffect(() => {
@@ -53,6 +76,13 @@ export function SmsConsentModal({open, onClose, email}: SmsConsentModalProps) {
 
     if (!phone) {
       setError('Please enter a phone number');
+      return;
+    }
+
+    // Validate phone number has 10 digits
+    const digitsOnly = phone.replace(/\D/g, '');
+    if (digitsOnly.length !== 10) {
+      setError('Please enter a valid 10-digit phone number');
       return;
     }
 
@@ -100,15 +130,21 @@ export function SmsConsentModal({open, onClose, email}: SmsConsentModalProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5 mt-2">
-          <FormField
-            id="phone"
-            label="Phone Number"
-            type="tel"
-            placeholder="+1 (555) 000-0000"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-          />
+          <div className="space-y-2">
+            <label htmlFor="phone" className="text-sm font-medium">
+              Phone Number <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="phone"
+              type="tel"
+              placeholder="(555) 555-5555"
+              value={phone}
+              onChange={handlePhoneChange}
+              required
+              autoComplete="tel"
+              className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
 
           <CheckboxField
             id="sms-consent"
