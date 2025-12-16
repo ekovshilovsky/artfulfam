@@ -43,7 +43,7 @@ export async function loader({request, context}: LoaderFunctionArgs) {
     totalResults,
   };
 
-  return defer({searchTerm, searchResults});
+  return {searchTerm, searchResults};
 }
 
 export default function SearchPage() {

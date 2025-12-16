@@ -77,7 +77,7 @@ export async function loader({params, request, context}: LoaderFunctionArgs) {
       return redirectToFirstVariant({product, request});
     }
   }
-  return defer({product, variants});
+  return {product, variants};
 }
 
 function redirectToFirstVariant({
