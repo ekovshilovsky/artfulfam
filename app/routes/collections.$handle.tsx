@@ -176,7 +176,7 @@ const COLLECTION_QUERY = `#graphql
         pageInfo {
           hasPreviousPage
           hasNextPage
-          hasNextPage
+          startCursor
           endCursor
         }
       }
