@@ -3,6 +3,12 @@ import {EmailSignupForm} from '~/components/organisms/email-signup-form';
 import {PasswordUnlockForm} from '~/components/organisms/password-unlock-form';
 import {SmsConsentModal} from '~/components/organisms/sms-consent-modal';
 
+// No layout wrapper for coming soon page
+export const handle = {
+  hideHeader: true,
+  hideFooter: true,
+};
+
 export default function ComingSoon() {
   const [showSmsModal, setShowSmsModal] = useState(false);
   const [userEmail, setUserEmail] = useState('');
@@ -22,12 +28,13 @@ export default function ComingSoon() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4" style={{background: 'linear-gradient(to bottom right, var(--secondary), var(--background), var(--muted))'}}>
+    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden" style={{background: 'linear-gradient(to bottom right, var(--secondary), var(--background), var(--muted))'}}>
       {/* Decorative elements */}
-      <div className="absolute top-20 left-10 w-20 h-20 bg-accent/20 rounded-full blur-2xl animate-pulse" />
-      <div className="absolute bottom-20 right-10 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
+      <div className="absolute top-20 left-10 w-32 h-32 bg-accent/20 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-20 right-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
+      <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-secondary/30 rounded-full blur-2xl animate-pulse" style={{animationDelay: '0.5s'}} />
       
-      <div className="max-w-2xl w-full space-y-8 relative z-10">
+      <div className="max-w-2xl w-full mx-auto px-4 py-8 space-y-8 relative z-10">
         {/* Logo/Branding */}
         <div className="text-center">
           <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent px-4 py-2 rounded-full mb-6 animate-fade-in">

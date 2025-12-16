@@ -1,4 +1,4 @@
-import { Await } from 'react-router';
+import { Await, useMatches } from 'react-router';
 import {Suspense} from 'react';
 import type {
   CartApiQueryFragment,
@@ -29,18 +29,25 @@ export function Layout({
   header,
   isLoggedIn,
 }: LayoutProps) {
+  const matches = useMatches();
+  const lastMatch = matches[matches.length - 1];
+  const hideHeader = lastMatch?.handle?.hideHeader;
+  const hideFooter = lastMatch?.handle?.hideFooter;
+
   return (
     <>
       <CartAside cart={cart} />
       <SearchAside />
       <MobileMenuAside menu={header.menu} />
-      <Header header={header} cart={cart} isLoggedIn={isLoggedIn} />
+      {!hideHeader && <Header header={header} cart={cart} isLoggedIn={isLoggedIn} />}
       <main>{children}</main>
-      <Suspense>
-        <Await resolve={footer}>
-          {(footer) => <Footer menu={footer.menu} />}
-        </Await>
-      </Suspense>
+      {!hideFooter && (
+        <Suspense>
+          <Await resolve={footer}>
+            {(footer) => <Footer menu={footer.menu} />}
+          </Await>
+        </Suspense>
+      )}
     </>
   );
 }
