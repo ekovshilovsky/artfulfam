@@ -1,15 +1,16 @@
-import {json, type ActionFunctionArgs} from '@shopify/hydrogen/oxygen';
+import {data} from 'react-router';
+import type {ActionFunctionArgs} from '@shopify/hydrogen/oxygen';
 
 export async function action({request, context}: ActionFunctionArgs) {
   if (request.method !== 'POST') {
-    return json({error: 'Method not allowed'}, {status: 405});
+    return data({error: 'Method not allowed'}, {status: 405});
   }
 
   try {
     const {email} = await request.json();
 
     if (!email || !email.includes('@')) {
-      return json({error: 'Invalid email address'}, {status: 400});
+      return data({error: 'Invalid email address'}, {status: 400});
     }
 
     const {storefront} = context;
@@ -31,7 +32,7 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     if (existingCustomerError) {
       // Customer already exists
-      return json({
+      return data({
         success: true,
         isNewCustomer: false,
         message: 'Already signed up!',
@@ -42,18 +43,18 @@ export async function action({request, context}: ActionFunctionArgs) {
       const errorMessage =
         customerCreate.customerUserErrors[0].message ||
         'Failed to sign up';
-      return json({error: errorMessage}, {status: 400});
+      return data({error: errorMessage}, {status: 400});
     }
 
     // Successfully created new customer
-    return json({
+    return data({
       success: true,
       isNewCustomer: true,
       message: 'Successfully signed up!',
     });
   } catch (error) {
     console.error('Customer signup error:', error);
-    return json({error: 'An unexpected error occurred'}, {status: 500});
+    return data({error: 'An unexpected error occurred'}, {status: 500});
   }
 }
 

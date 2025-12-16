@@ -1,15 +1,16 @@
-import {json, type ActionFunctionArgs} from '@shopify/hydrogen/oxygen';
+import {data} from 'react-router';
+import type {ActionFunctionArgs} from '@shopify/hydrogen/oxygen';
 
 export async function action({request, context}: ActionFunctionArgs) {
   if (request.method !== 'POST') {
-    return json({error: 'Method not allowed'}, {status: 405});
+    return data({error: 'Method not allowed'}, {status: 405});
   }
 
   try {
     const {email, phone} = await request.json();
 
     if (!email || !phone) {
-      return json({error: 'Email and phone are required'}, {status: 400});
+      return data({error: 'Email and phone are required'}, {status: 400});
     }
 
     const {env, storefront} = context;
@@ -20,7 +21,7 @@ export async function action({request, context}: ActionFunctionArgs) {
     });
 
     if (!customers?.edges?.length) {
-      return json({error: 'Customer not found'}, {status: 404});
+      return data({error: 'Customer not found'}, {status: 404});
     }
 
     const customerId = customers.edges[0].node.id;
@@ -31,7 +32,7 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     if (!adminToken || !shopDomain) {
       console.error('Missing Admin API credentials');
-      return json({error: 'Server configuration error'}, {status: 500});
+      return data({error: 'Server configuration error'}, {status: 500});
     }
 
     const adminResponse = await fetch(
@@ -58,7 +59,7 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     if (adminData.errors) {
       console.error('Admin API errors:', adminData.errors);
-      return json(
+      return data(
         {error: 'Failed to update customer phone'},
         {status: 500},
       );
@@ -66,16 +67,16 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     if (adminData.data?.customerUpdate?.userErrors?.length) {
       const errorMessage = adminData.data.customerUpdate.userErrors[0].message;
-      return json({error: errorMessage}, {status: 400});
+      return data({error: errorMessage}, {status: 400});
     }
 
-    return json({
+    return data({
       success: true,
       message: 'Phone number updated successfully',
     });
   } catch (error) {
     console.error('Update customer SMS error:', error);
-    return json({error: 'An unexpected error occurred'}, {status: 500});
+    return data({error: 'An unexpected error occurred'}, {status: 500});
   }
 }
 
