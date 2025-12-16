@@ -39,7 +39,7 @@ export function Hero() {
               Explore Art
             </Link>
             <Link
-              to="/about"
+              to="/artists"
               className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring border border-input bg-transparent hover:bg-accent hover:text-accent-foreground h-12 px-8 text-base"
             >
               Meet the Artists
