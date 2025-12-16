@@ -2,15 +2,12 @@ import {useState} from 'react';
 
 interface EmailSignupFormProps {
   onSuccess?: (data: {email: string; isNewCustomer: boolean}) => void;
-  isSubmitting?: boolean;
 }
 
-export function EmailSignupForm({
-  onSuccess,
-  isSubmitting = false,
-}: EmailSignupFormProps) {
+export function EmailSignupForm({onSuccess}: EmailSignupFormProps) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +18,8 @@ export function EmailSignupForm({
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
       const response = await fetch('/api/customer-signup', {
         method: 'POST',
@@ -28,16 +27,23 @@ export function EmailSignupForm({
         body: JSON.stringify({email}),
       });
 
-      const data = await response.json();
+      const data = (await response.json()) as {
+        success?: boolean;
+        isNewCustomer?: boolean;
+        error?: string;
+      };
 
       if (!response.ok) {
         setError(data.error || 'Failed to sign up');
+        setIsSubmitting(false);
         return;
       }
 
-      onSuccess?.({email, isNewCustomer: data.isNewCustomer});
+      // Pass result to parent - parent handles the next step
+      onSuccess?.({email, isNewCustomer: data.isNewCustomer ?? false});
     } catch (err) {
       setError('An error occurred. Please try again.');
+      setIsSubmitting(false);
     }
   };
 

@@ -18,16 +18,28 @@ export const meta = () => {
 
 export default function ComingSoon() {
   const [showSmsModal, setShowSmsModal] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
   const [userEmail, setUserEmail] = useState('');
 
   const handleEmailSuccess = (data: {
     email: string;
     isNewCustomer: boolean;
   }) => {
+    setUserEmail(data.email);
+
     if (data.isNewCustomer) {
-      setUserEmail(data.email);
+      // New customer: show SMS modal first, thank you after modal closes
       setShowSmsModal(true);
+    } else {
+      // Existing customer: skip SMS modal, show thank you directly
+      setShowThankYou(true);
     }
+  };
+
+  const handleSmsModalClose = () => {
+    setShowSmsModal(false);
+    // After SMS modal closes (submit or skip), show thank you
+    setShowThankYou(true);
   };
 
   const handlePasswordSuccess = () => {
@@ -66,31 +78,57 @@ export default function ComingSoon() {
           </p>
         </div>
 
-        {/* Coming Soon Card */}
-        <div className="bg-gradient-to-br from-primary to-accent text-primary-foreground rounded-2xl shadow-xl p-8 md:p-10 space-y-6">
-          <div className="text-center space-y-3">
-            <h2 className="text-3xl md:text-4xl font-bold font-display">Coming Soon</h2>
-            <p className="text-lg opacity-90 leading-relaxed">
-              We're working hard to bring you something special. Sign up to be
-              notified when we launch!
-            </p>
-          </div>
-
-          <EmailSignupForm onSuccess={handleEmailSuccess} />
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-primary-foreground/20" />
+        {/* Coming Soon Card or Thank You */}
+        {showThankYou ? (
+          <div className="bg-gradient-to-br from-primary to-accent text-primary-foreground rounded-2xl shadow-xl p-8 md:p-10 space-y-6">
+            <div className="text-center space-y-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-foreground/20 mb-2">
+                <svg
+                  className="h-8 w-8"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold font-display">Thank You!</h2>
+              <p className="text-lg opacity-90 leading-relaxed">
+                We'll let you know when our store opens up. Stay tuned for something special!
+              </p>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-gradient-to-br from-primary to-accent opacity-90">
-                Already have access?
-              </span>
-            </div>
           </div>
+        ) : (
+          <div className="bg-gradient-to-br from-primary to-accent text-primary-foreground rounded-2xl shadow-xl p-8 md:p-10 space-y-6">
+            <div className="text-center space-y-3">
+              <h2 className="text-3xl md:text-4xl font-bold font-display">Coming Soon</h2>
+              <p className="text-lg opacity-90 leading-relaxed">
+                We're working hard to bring you something special. Sign up to be
+                notified when we launch!
+              </p>
+            </div>
 
-          <PasswordUnlockForm onSuccess={handlePasswordSuccess} />
-        </div>
+            <EmailSignupForm onSuccess={handleEmailSuccess} />
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-primary-foreground/20" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-3 bg-gradient-to-br from-primary to-accent opacity-90">
+                  Already have access?
+                </span>
+              </div>
+            </div>
+
+            <PasswordUnlockForm onSuccess={handlePasswordSuccess} />
+          </div>
+        )}
 
         {/* Footer */}
         <p className="text-center text-sm text-muted-foreground">
@@ -98,10 +136,10 @@ export default function ComingSoon() {
         </p>
       </div>
 
-      {/* SMS Consent Modal */}
+      {/* SMS Consent Modal - only shown for new customers */}
       <SmsConsentModal
         open={showSmsModal}
-        onClose={() => setShowSmsModal(false)}
+        onClose={handleSmsModalClose}
         email={userEmail}
       />
     </div>
