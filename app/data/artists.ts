@@ -3,7 +3,8 @@ export type Artist = {
   name: string;
   birthday: string; // Format: YYYY-MM-DD
   role: 'student' | 'teacher';
-  bio: string;
+  shortBio: string; // ~120 characters for cards
+  bio: string; // Full bio for detail page
   mediums: string[];
   styles: string[];
   teacherId?: string; // For students
@@ -17,6 +18,7 @@ export const artists: Record<string, Artist> = {
     name: 'Bella',
     birthday: '2012-02-01',
     role: 'student',
+    shortBio: 'A creative young artist who loves bringing her imagination to life through vibrant colors and playful designs.',
     bio: 'Bella is a creative young artist who loves bringing her imagination to life through vibrant colors and playful designs. Her artwork reflects a unique perspective that captures the wonder of childhood, transforming everyday moments into extraordinary visual stories.',
     mediums: ['Digital', 'Watercolor', 'Marker'],
     styles: ['Abstract', 'Cartoon', 'Fantasy'],
@@ -27,6 +29,7 @@ export const artists: Record<string, Artist> = {
     name: 'Maksim',
     birthday: '2010-09-01',
     role: 'student',
+    shortBio: 'An enthusiastic artist with a keen eye for detail and a passion for experimenting with different artistic techniques.',
     bio: 'Maksim is an enthusiastic artist with a keen eye for detail and a passion for experimenting with different artistic techniques. His bold approach to art demonstrates creativity beyond his years, combining traditional methods with modern expression.',
     mediums: ['Acrylic', 'Pencil', 'Digital'],
     styles: ['Cartoon', 'Realism', 'Pop Art'],
@@ -37,6 +40,7 @@ export const artists: Record<string, Artist> = {
     name: 'Galina',
     birthday: '1980-05-15',
     role: 'teacher',
+    shortBio: 'An accomplished artist and dedicated art educator who inspires young minds to explore their creativity.',
     bio: 'Galina is an accomplished artist and dedicated art educator who inspires young minds to explore their creativity. With years of experience in various artistic mediums, she guides her students in discovering their unique artistic voices while developing their technical skills and creative confidence.',
     mediums: ['Oil Paint', 'Acrylic', 'Mixed Media', 'Digital'],
     styles: ['Contemporary', 'Abstract', 'Impressionism'],

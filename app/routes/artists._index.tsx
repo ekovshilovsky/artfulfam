@@ -68,8 +68,8 @@ function ArtistCard({artist}: {artist: Artist}) {
           ))}
         </div>
         
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {artist.bio}
+        <p className="text-sm text-muted-foreground">
+          {artist.shortBio}
         </p>
       </div>
     </Link>
