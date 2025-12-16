@@ -1,4 +1,4 @@
-import {data} from 'react-router';
+import {data, redirect} from 'react-router';
 import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
 import {
   Links,
@@ -39,10 +39,22 @@ export function links() {
   ];
 }
 
-export async function loader({context}: LoaderFunctionArgs) {
-  const {storefront, session, cart} = context;
+export async function loader({context, request}: LoaderFunctionArgs) {
+  const {storefront, session, cart, env} = context;
   const customerAccessToken = await session.get('customerAccessToken');
-  const publicStoreDomain = context.env.PUBLIC_STORE_DOMAIN;
+  const publicStoreDomain = env.PUBLIC_STORE_DOMAIN;
+
+  // Check password protection
+  const url = new URL(request.url);
+  const isComingSoonPage = url.pathname === '/coming-soon';
+  const isApiRoute = url.pathname.startsWith('/api/');
+  
+  if (env.STORE_PASSWORD && !isComingSoonPage && !isApiRoute) {
+    const storeAccess = await session.get('store_access');
+    if (storeAccess !== 'granted') {
+      return redirect('/coming-soon');
+    }
+  }
 
   // validate the customer access token is valid
   const {isLoggedIn, headers} = await validateCustomerAccessToken(
