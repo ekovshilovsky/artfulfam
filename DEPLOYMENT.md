@@ -37,7 +37,7 @@ Oxygen automatically injects these variables:
 
 ## Deploying to Vercel
 
-Vercel supports Hydrogen v2 with automatic detection and Edge Functions.
+**⚠️ Note**: Hydrogen 2025.7.0 with React Router 7 is primarily optimized for Oxygen deployment. Vercel deployment may have compatibility issues. Oxygen is strongly recommended.
 
 ### Setup
 
