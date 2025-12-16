@@ -1,6 +1,12 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "shopify hydrogen build",
+  "outputDirectory": "dist/client",
   "framework": null,
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "edge"
+    }
+  },
   "env": {
     "SESSION_SECRET": "foobar",
     "PUBLIC_STORE_DOMAIN": "mock.shop"
