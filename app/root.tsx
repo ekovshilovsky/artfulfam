@@ -1,4 +1,5 @@
-import {defer, type LoaderArgs} from '@shopify/remix-oxygen';
+import {data} from 'react-router';
+import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
 import {
   Links,
   Meta,
@@ -9,14 +10,14 @@ import {
   useLoaderData,
   ScrollRestoration,
   isRouteErrorResponse,
-} from '@remix-run/react';
+} from 'react-router';
 import type {CustomerAccessToken} from '@shopify/hydrogen-react/storefront-api-types';
 import type {HydrogenSession} from '../server';
 import favicon from '../public/favicon.svg';
-import resetStyles from './styles/reset.css';
-import appStyles from './styles/app.css';
+import resetStyles from './styles/reset.css?url';
+import appStyles from './styles/app.css?url';
 import {Layout} from '~/components/Layout';
-import tailwindCss from './styles/tailwind.css';
+import tailwindCss from './styles/tailwind.css?url';
 
 export function links() {
   return [
@@ -35,7 +36,7 @@ export function links() {
   ];
 }
 
-export async function loader({context}: LoaderArgs) {
+export async function loader({context}: LoaderFunctionArgs) {
   const {storefront, session, cart} = context;
   const customerAccessToken = await session.get('customerAccessToken');
   const publicStoreDomain = context.env.PUBLIC_STORE_DOMAIN;
@@ -65,7 +66,7 @@ export async function loader({context}: LoaderArgs) {
     },
   });
 
-  return defer(
+  return data(
     {
       cart: cartPromise,
       footer: footerPromise,

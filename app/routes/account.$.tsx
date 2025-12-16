@@ -1,7 +1,7 @@
-import type {LoaderArgs} from '@shopify/remix-oxygen';
-import {redirect} from '@shopify/remix-oxygen';
+import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
+import {redirect} from 'react-router';;
 
-export async function loader({context}: LoaderArgs) {
+export async function loader({context}: LoaderFunctionArgs) {
   if (await context.session.get('customerAccessToken')) {
     return redirect('/account');
   }

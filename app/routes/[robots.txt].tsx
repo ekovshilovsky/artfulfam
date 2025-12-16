@@ -1,8 +1,8 @@
-import {type LoaderArgs} from '@shopify/remix-oxygen';
-import {useRouteError, isRouteErrorResponse} from '@remix-run/react';
+import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
+import { useRouteError, isRouteErrorResponse } from 'react-router';
 import {parseGid} from '@shopify/hydrogen';
 
-export async function loader({request, context}: LoaderArgs) {
+export async function loader({request, context}: LoaderFunctionArgs) {
   const url = new URL(request.url);
 
   const {shop} = await context.storefront.query(ROBOTS_QUERY);

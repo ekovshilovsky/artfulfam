@@ -1,6 +1,7 @@
-import type {V2_MetaFunction} from '@shopify/remix-oxygen';
-import {json, type LoaderArgs} from '@shopify/remix-oxygen';
-import {Link, useLoaderData} from '@remix-run/react';
+import {MetaFunction} from 'react-router';;
+import {data} from 'react-router';
+import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
+import { Link, useLoaderData } from 'react-router';
 import {type Shop} from '@shopify/hydrogen-react/storefront-api-types';
 
 type SelectedPolicies = keyof Pick<
@@ -8,11 +9,11 @@ type SelectedPolicies = keyof Pick<
   'privacyPolicy' | 'shippingPolicy' | 'termsOfService' | 'refundPolicy'
 >;
 
-export const meta: V2_MetaFunction = ({data}) => {
+export const meta: MetaFunction = ({data}) => {
   return [{title: `Hydrogen | ${data.policy.title}`}];
 };
 
-export async function loader({params, context}: LoaderArgs) {
+export async function loader({params, context}: LoaderFunctionArgs) {
   if (!params.handle) {
     throw new Response('No handle was passed in', {status: 404});
   }
@@ -39,7 +40,7 @@ export async function loader({params, context}: LoaderArgs) {
     throw new Response('Could not find the policy', {status: 404});
   }
 
-  return json({policy});
+  return data({policy});
 }
 
 export default function Policy() {

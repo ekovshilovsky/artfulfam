@@ -1,13 +1,14 @@
-import type {V2_MetaFunction} from '@shopify/remix-oxygen';
-import {json, type LoaderArgs} from '@shopify/remix-oxygen';
-import {useLoaderData} from '@remix-run/react';
+import {MetaFunction} from 'react-router';;
+import {data} from 'react-router';
+import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
+import { useLoaderData } from 'react-router';
 import {Image} from '@shopify/hydrogen';
 
-export const meta: V2_MetaFunction = ({data}) => {
+export const meta: MetaFunction = ({data}) => {
   return [{title: `Hydrogen | ${data.article.title} article`}];
 };
 
-export async function loader({params, context}: LoaderArgs) {
+export async function loader({params, context}: LoaderFunctionArgs) {
   const {blogHandle, articleHandle} = params;
 
   if (!articleHandle || !blogHandle) {
@@ -24,7 +25,7 @@ export async function loader({params, context}: LoaderArgs) {
 
   const article = blog.articleByHandle;
 
-  return json({article});
+  return data({article});
 }
 
 export default function Article() {

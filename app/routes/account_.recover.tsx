@@ -1,27 +1,28 @@
-import {json, redirect, type LoaderArgs} from '@shopify/remix-oxygen';
-import {Form, Link, useActionData} from '@remix-run/react';
+import {data, redirect} from 'react-router';
+import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
+import { Form, Link, useActionData } from 'react-router';
 
 type ActionResponse = {
   error?: string;
   resetRequested?: boolean;
 };
 
-export async function loader({context}: LoaderArgs) {
+export async function loader({context}: LoaderFunctionArgs) {
   const customerAccessToken = await context.session.get('customerAccessToken');
   if (customerAccessToken) {
     return redirect('/account');
   }
 
-  return json({});
+  return data({});
 }
 
-export async function action({request, context}: LoaderArgs) {
+export async function action({request, context}: LoaderFunctionArgs) {
   const {storefront} = context;
   const form = await request.formData();
   const email = form.has('email') ? String(form.get('email')) : null;
 
   if (request.method !== 'POST') {
-    return json({error: 'Method not allowed'}, {status: 405});
+    return data({error: 'Method not allowed'}, {status: 405});
   }
 
   try {
@@ -32,13 +33,13 @@ export async function action({request, context}: LoaderArgs) {
       variables: {email},
     });
 
-    return json({resetRequested: true});
+    return data({resetRequested: true});
   } catch (error: unknown) {
     const resetRequested = false;
     if (error instanceof Error) {
-      return json({error: error.message, resetRequested}, {status: 400});
+      return data({error: error.message, resetRequested}, {status: 400});
     }
-    return json({error, resetRequested}, {status: 400});
+    return data({error, resetRequested}, {status: 400});
   }
 }
 

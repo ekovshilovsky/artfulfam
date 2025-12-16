@@ -1,42 +1,37 @@
 import type {CustomerFragment} from 'storefrontapi.generated';
 import type {CustomerUpdateInput} from '@shopify/hydrogen/storefront-api-types';
-import type {ActionArgs, LoaderArgs} from '@shopify/remix-oxygen';
-import {json, redirect, type V2_MetaFunction} from '@shopify/remix-oxygen';
-import {
-  Form,
-  useActionData,
-  useNavigation,
-  useOutletContext,
-} from '@remix-run/react';
+import type {ActionFunctionArgs, LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
+import {data, redirect, MetaFunction} from 'react-router';;
+import { Form, useActionData, useNavigation, useOutletContext } from 'react-router';
 
 export type ActionResponse = {
   error: string | null;
   customer: CustomerFragment | null;
 };
 
-export const meta: V2_MetaFunction = () => {
+export const meta: MetaFunction = () => {
   return [{title: 'Profile'}];
 };
 
-export async function loader({context}: LoaderArgs) {
+export async function loader({context}: LoaderFunctionArgs) {
   const customerAccessToken = await context.session.get('customerAccessToken');
   if (!customerAccessToken) {
     return redirect('/account/login');
   }
-  return json({});
+  return data({});
 }
 
-export async function action({request, context}: ActionArgs) {
+export async function action({request, context}: ActionFunctionArgs) {
   const {session, storefront} = context;
 
   if (request.method !== 'PUT') {
-    return json({error: 'Method not allowed'}, {status: 405});
+    return data({error: 'Method not allowed'}, {status: 405});
   }
 
   const form = await request.formData();
   const customerAccessToken = await session.get('customerAccessToken');
   if (!customerAccessToken) {
-    return json({error: 'Unauthorized'}, {status: 401});
+    return data({error: 'Unauthorized'}, {status: 401});
   }
 
   try {
@@ -75,7 +70,7 @@ export async function action({request, context}: ActionArgs) {
 
     // check for mutation errors
     if (updated.customerUpdate?.customerUserErrors?.length) {
-      return json(
+      return data(
         {error: updated.customerUpdate?.customerUserErrors[0]},
         {status: 400},
       );
@@ -89,7 +84,7 @@ export async function action({request, context}: ActionArgs) {
       );
     }
 
-    return json(
+    return data(
       {error: null, customer: updated.customerUpdate?.customer},
       {
         headers: {
@@ -98,7 +93,7 @@ export async function action({request, context}: ActionArgs) {
       },
     );
   } catch (error: any) {
-    return json({error: error.message, customer: null}, {status: 400});
+    return data({error: error.message, customer: null}, {status: 400});
   }
 }
 

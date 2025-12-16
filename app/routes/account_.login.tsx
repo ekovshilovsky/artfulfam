@@ -1,32 +1,28 @@
-import {
-  json,
-  redirect,
-  type ActionArgs,
-  type LoaderArgs,
-  type V2_MetaFunction,
-} from '@shopify/remix-oxygen';
-import {Form, Link, useActionData} from '@remix-run/react';
+import {data, redirect, MetaFunction} from 'react-router';
+import type {ActionFunctionArgs, LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';
+import {} from '@shopify/hydrogen/oxygen';;
+import { Form, Link, useActionData } from 'react-router';
 
 type ActionResponse = {
   error: string | null;
 };
 
-export const meta: V2_MetaFunction = () => {
+export const meta: MetaFunction = () => {
   return [{title: 'Login'}];
 };
 
-export async function loader({context}: LoaderArgs) {
+export async function loader({context}: LoaderFunctionArgs) {
   if (await context.session.get('customerAccessToken')) {
     return redirect('/account');
   }
-  return json({});
+  return data({});
 }
 
-export async function action({request, context}: ActionArgs) {
+export async function action({request, context}: ActionFunctionArgs) {
   const {session, storefront} = context;
 
   if (request.method !== 'POST') {
-    return json({error: 'Method not allowed'}, {status: 405});
+    return data({error: 'Method not allowed'}, {status: 405});
   }
 
   try {
@@ -62,9 +58,9 @@ export async function action({request, context}: ActionArgs) {
     });
   } catch (error: unknown) {
     if (error instanceof Error) {
-      return json({error: error.message}, {status: 400});
+      return data({error: error.message}, {status: 400});
     }
-    return json({error}, {status: 400});
+    return data({error}, {status: 400});
   }
 }
 

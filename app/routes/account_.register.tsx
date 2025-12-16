@@ -1,10 +1,7 @@
-import {
-  json,
-  redirect,
-  type ActionFunction,
-  type LoaderArgs,
-} from '@shopify/remix-oxygen';
-import {Form, Link, useActionData} from '@remix-run/react';
+import {data, redirect} from 'react-router';
+import type {ActionFunction, LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';
+import {} from '@shopify/hydrogen/oxygen';;
+import { Form, Link, useActionData } from 'react-router';
 import type {CustomerCreateMutation} from 'storefrontapi.generated';
 
 type ActionResponse = {
@@ -14,18 +11,18 @@ type ActionResponse = {
     | null;
 };
 
-export async function loader({context}: LoaderArgs) {
+export async function loader({context}: LoaderFunctionArgs) {
   const customerAccessToken = await context.session.get('customerAccessToken');
   if (customerAccessToken) {
     return redirect('/account');
   }
 
-  return json({});
+  return data({});
 }
 
 export const action: ActionFunction = async ({request, context}) => {
   if (request.method !== 'POST') {
-    return json({error: 'Method not allowed'}, {status: 405});
+    return data({error: 'Method not allowed'}, {status: 405});
   }
 
   const {storefront, session} = context;
@@ -85,7 +82,7 @@ export const action: ActionFunction = async ({request, context}) => {
       customerAccessTokenCreate?.customerAccessToken,
     );
 
-    return json(
+    return data(
       {error: null, newCustomer},
       {
         status: 302,
@@ -97,9 +94,9 @@ export const action: ActionFunction = async ({request, context}) => {
     );
   } catch (error: unknown) {
     if (error instanceof Error) {
-      return json({error: error.message}, {status: 400});
+      return data({error: error.message}, {status: 400});
     }
-    return json({error}, {status: 400});
+    return data({error}, {status: 400});
   }
 };
 

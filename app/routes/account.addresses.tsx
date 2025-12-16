@@ -1,18 +1,9 @@
 import type {MailingAddressInput} from '@shopify/hydrogen/storefront-api-types';
 import type {AddressFragment, CustomerFragment} from 'storefrontapi.generated';
-import {
-  json,
-  redirect,
-  type ActionArgs,
-  type LoaderArgs,
-  type V2_MetaFunction,
-} from '@shopify/remix-oxygen';
-import {
-  Form,
-  useActionData,
-  useNavigation,
-  useOutletContext,
-} from '@remix-run/react';
+import {data, redirect, MetaFunction} from 'react-router';
+import type {ActionFunctionArgs, LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';
+import {} from '@shopify/hydrogen/oxygen';;
+import { Form, useActionData, useNavigation, useOutletContext } from 'react-router';
 
 export type ActionResponse = {
   addressId?: string | null;
@@ -23,20 +14,20 @@ export type ActionResponse = {
   updatedAddress?: AddressFragment;
 };
 
-export const meta: V2_MetaFunction = () => {
+export const meta: MetaFunction = () => {
   return [{title: 'Addresses'}];
 };
 
-export async function loader({context}: LoaderArgs) {
+export async function loader({context}: LoaderFunctionArgs) {
   const {session} = context;
   const customerAccessToken = await session.get('customerAccessToken');
   if (!customerAccessToken) {
     return redirect('/account/login');
   }
-  return json({});
+  return data({});
 }
 
-export async function action({request, context}: ActionArgs) {
+export async function action({request, context}: ActionFunctionArgs) {
   const {storefront, session} = context;
 
   try {
@@ -51,7 +42,7 @@ export async function action({request, context}: ActionArgs) {
 
     const customerAccessToken = await session.get('customerAccessToken');
     if (!customerAccessToken) {
-      return json({error: {[addressId]: 'Unauthorized'}}, {status: 401});
+      return data({error: {[addressId]: 'Unauthorized'}}, {status: 401});
     }
     const {accessToken} = customerAccessToken;
 
@@ -120,12 +111,12 @@ export async function action({request, context}: ActionArgs) {
             }
           }
 
-          return json({error: null, createdAddress, defaultAddress});
+          return data({error: null, createdAddress, defaultAddress});
         } catch (error: unknown) {
           if (error instanceof Error) {
-            return json({error: {[addressId]: error.message}}, {status: 400});
+            return data({error: {[addressId]: error.message}}, {status: 400});
           }
-          return json({error: {[addressId]: error}}, {status: 400});
+          return data({error: {[addressId]: error}}, {status: 400});
         }
       }
 
@@ -167,12 +158,12 @@ export async function action({request, context}: ActionArgs) {
             }
           }
 
-          return json({error: null, updatedAddress, defaultAddress});
+          return data({error: null, updatedAddress, defaultAddress});
         } catch (error: unknown) {
           if (error instanceof Error) {
-            return json({error: {[addressId]: error.message}}, {status: 400});
+            return data({error: {[addressId]: error.message}}, {status: 400});
           }
-          return json({error: {[addressId]: error}}, {status: 400});
+          return data({error: {[addressId]: error}}, {status: 400});
         }
       }
 
@@ -190,17 +181,17 @@ export async function action({request, context}: ActionArgs) {
             const error = customerAddressDelete.customerUserErrors[0];
             throw new Error(error.message);
           }
-          return json({error: null, deletedAddress: addressId});
+          return data({error: null, deletedAddress: addressId});
         } catch (error: unknown) {
           if (error instanceof Error) {
-            return json({error: {[addressId]: error.message}}, {status: 400});
+            return data({error: {[addressId]: error.message}}, {status: 400});
           }
-          return json({error: {[addressId]: error}}, {status: 400});
+          return data({error: {[addressId]: error}}, {status: 400});
         }
       }
 
       default: {
-        return json(
+        return data(
           {error: {[addressId]: 'Method not allowed'}},
           {status: 405},
         );
@@ -208,9 +199,9 @@ export async function action({request, context}: ActionArgs) {
     }
   } catch (error: unknown) {
     if (error instanceof Error) {
-      return json({error: error.message}, {status: 400});
+      return data({error: error.message}, {status: 400});
     }
-    return json({error}, {status: 400});
+    return data({error}, {status: 400});
   }
 }
 

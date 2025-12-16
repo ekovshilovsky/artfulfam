@@ -1,12 +1,13 @@
-import type {V2_MetaFunction} from '@shopify/remix-oxygen';
-import {json, type LoaderArgs} from '@shopify/remix-oxygen';
-import {useLoaderData} from '@remix-run/react';
+import {MetaFunction} from 'react-router';;
+import {data} from 'react-router';
+import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
+import { useLoaderData } from 'react-router';
 
-export const meta: V2_MetaFunction = ({data}) => {
+export const meta: MetaFunction = ({data}) => {
   return [{title: `Hydrogen | ${data.page.title}`}];
 };
 
-export async function loader({params, context}: LoaderArgs) {
+export async function loader({params, context}: LoaderFunctionArgs) {
   if (!params.handle) {
     throw new Error('Missing page handle');
   }
@@ -21,7 +22,7 @@ export async function loader({params, context}: LoaderArgs) {
     throw new Response('Not Found', {status: 404});
   }
 
-  return json({page});
+  return data({page});
 }
 
 export default function Page() {

@@ -1,13 +1,7 @@
-import {
-  useParams,
-  useFetcher,
-  Link,
-  Form,
-  type FormProps,
-} from '@remix-run/react';
+import { useParams, useFetcher, Link, Form, type FormProps } from 'react-router';
 import {Image, Money, Pagination} from '@shopify/hydrogen';
 import React, {useRef, useEffect} from 'react';
-import {useFetchers} from '@remix-run/react';
+import { useFetchers } from 'react-router';
 
 import type {
   PredictiveProductFragment,

@@ -1,21 +1,18 @@
-import {Link, useLoaderData} from '@remix-run/react';
+import { Link, useLoaderData } from 'react-router';
 import {Money, Pagination, getPaginationVariables} from '@shopify/hydrogen';
-import {
-  json,
-  redirect,
-  type LoaderArgs,
-  type V2_MetaFunction,
-} from '@shopify/remix-oxygen';
+import {data, redirect, MetaFunction} from 'react-router';
+import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';
+import {} from '@shopify/hydrogen/oxygen';;
 import type {
   CustomerOrdersFragment,
   OrderItemFragment,
 } from 'storefrontapi.generated';
 
-export const meta: V2_MetaFunction = () => {
+export const meta: MetaFunction = () => {
   return [{title: 'Orders'}];
 };
 
-export async function loader({request, context}: LoaderArgs) {
+export async function loader({request, context}: LoaderFunctionArgs) {
   const {session, storefront} = context;
 
   const customerAccessToken = await session.get('customerAccessToken');
@@ -42,12 +39,12 @@ export async function loader({request, context}: LoaderArgs) {
       throw new Error('Customer not found');
     }
 
-    return json({customer});
+    return data({customer});
   } catch (error: unknown) {
     if (error instanceof Error) {
-      return json({error: error.message}, {status: 400});
+      return data({error: error.message}, {status: 400});
     }
-    return json({error}, {status: 400});
+    return data({error}, {status: 400});
   }
 }
 

@@ -1,13 +1,14 @@
-import {json, redirect, type LoaderArgs} from '@shopify/remix-oxygen';
-import {Link, useLoaderData, type V2_MetaFunction} from '@remix-run/react';
+import {data, redirect} from 'react-router';
+import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
+import type { Link, useLoaderData, type , MetaFunction } from 'react-router';
 import {Money, Image, flattenConnection} from '@shopify/hydrogen';
 import type {OrderLineItemFullFragment} from 'storefrontapi.generated';
 
-export const meta: V2_MetaFunction<typeof loader> = ({data}) => {
+export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Order ${data?.order?.name}`}];
 };
 
-export async function loader({params, context}: LoaderArgs) {
+export async function loader({params, context}: LoaderFunctionArgs) {
   const {session, storefront} = context;
 
   if (!params.id) {
@@ -41,7 +42,7 @@ export async function loader({params, context}: LoaderArgs) {
     firstDiscount?.__typename === 'PricingPercentageValue' &&
     firstDiscount?.percentage;
 
-  return json({
+  return data({
     order,
     lineItems,
     discountValue,
@@ -53,7 +54,7 @@ export default function OrderRoute() {
   const {order, lineItems, discountValue, discountPercentage} =
     useLoaderData<typeof loader>();
   return (
-    <div className="account-order">
+    (<div className="account-order">
       <h2>Order {order.name}</h2>
       <p>Placed on {new Date(order.processedAt!).toDateString()}</p>
       <br />
@@ -70,7 +71,7 @@ export default function OrderRoute() {
           <tbody>
             {lineItems.map((lineItem, lineItemIndex) => (
               // eslint-disable-next-line react/no-array-index-key
-              <OrderLineRow key={lineItemIndex} lineItem={lineItem} />
+              (<OrderLineRow key={lineItemIndex} lineItem={lineItem} />)
             ))}
           </tbody>
           <tfoot>
@@ -159,7 +160,7 @@ export default function OrderRoute() {
           View Order Status →
         </a>
       </p>
-    </div>
+    </div>)
   );
 }
 

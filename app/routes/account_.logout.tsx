@@ -1,11 +1,8 @@
-import {
-  json,
-  redirect,
-  type ActionArgs,
-  type V2_MetaFunction,
-} from '@shopify/remix-oxygen';
+import {data, redirect, MetaFunction} from 'react-router';
+import type {ActionFunctionArgs} from '@shopify/hydrogen/oxygen';
+import {} from '@shopify/hydrogen/oxygen';;
 
-export const meta: V2_MetaFunction = () => {
+export const meta: MetaFunction = () => {
   return [{title: 'Logout'}];
 };
 
@@ -13,12 +10,12 @@ export async function loader() {
   return redirect('/account/login');
 }
 
-export async function action({request, context}: ActionArgs) {
+export async function action({request, context}: ActionFunctionArgs) {
   const {session} = context;
   session.unset('customerAccessToken');
 
   if (request.method !== 'POST') {
-    return json({error: 'Method not allowed'}, {status: 405});
+    return data({error: 'Method not allowed'}, {status: 405});
   }
 
   return redirect('/', {

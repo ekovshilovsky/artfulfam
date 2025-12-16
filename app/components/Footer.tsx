@@ -1,4 +1,4 @@
-import {useMatches, NavLink} from '@remix-run/react';
+import { useMatches, NavLink } from 'react-router';
 import type {FooterQuery} from 'storefrontapi.generated';
 
 export function Footer({menu}: FooterQuery) {

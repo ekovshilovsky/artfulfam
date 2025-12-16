@@ -1,10 +1,11 @@
-import type {V2_MetaFunction} from '@shopify/remix-oxygen';
-import {json, type LoaderArgs} from '@shopify/remix-oxygen';
-import {Link, useLoaderData} from '@remix-run/react';
+import {MetaFunction} from 'react-router';;
+import {data} from 'react-router';
+import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
+import { Link, useLoaderData } from 'react-router';
 import {Image, Pagination, getPaginationVariables} from '@shopify/hydrogen';
 import type {ArticleItemFragment} from 'storefrontapi.generated';
 
-export const meta: V2_MetaFunction = ({data}) => {
+export const meta: MetaFunction = ({data}) => {
   return [{title: `Hydrogen | ${data.blog.title} blog`}];
 };
 
@@ -12,7 +13,7 @@ export const loader = async ({
   request,
   params,
   context: {storefront},
-}: LoaderArgs) => {
+}: LoaderFunctionArgs) => {
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 4,
   });
@@ -32,7 +33,7 @@ export const loader = async ({
     throw new Response('Not found', {status: 404});
   }
 
-  return json({blog});
+  return data({blog});
 };
 
 export default function Blog() {

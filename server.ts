@@ -1,5 +1,5 @@
 // Virtual entry point for the app
-import * as remixBuild from '@remix-run/dev/server-build';
+import * as remixBuild from 'virtual:react-router/server-build';
 import {
   cartGetIdDefault,
   cartSetIdDefault,
@@ -10,10 +10,12 @@ import {
 import {
   createRequestHandler,
   getStorefrontHeaders,
+} from '@shopify/hydrogen/oxygen';
+import {
   createCookieSessionStorage,
   type SessionStorage,
   type Session,
-} from '@shopify/remix-oxygen';
+} from 'react-router';
 
 /**
  * Export a fetch handler in module format.

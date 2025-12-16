@@ -1,9 +1,10 @@
-import {useLoaderData, Link} from '@remix-run/react';
-import {json, type LoaderArgs} from '@shopify/remix-oxygen';
+import { useLoaderData, Link } from 'react-router';
+import {data} from 'react-router';
+import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
 import {Pagination, getPaginationVariables, Image} from '@shopify/hydrogen';
 import type {CollectionFragment} from 'storefrontapi.generated';
 
-export async function loader({context, request}: LoaderArgs) {
+export async function loader({context, request}: LoaderFunctionArgs) {
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 4,
   });
@@ -12,7 +13,7 @@ export async function loader({context, request}: LoaderArgs) {
     variables: paginationVariables,
   });
 
-  return json({collections});
+  return data({collections});
 }
 
 export default function Collections() {
