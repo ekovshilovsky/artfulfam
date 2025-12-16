@@ -1,4 +1,6 @@
 {
   "installCommand": "pnpm install --ignore-scripts=false",
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "dist",
   "framework": null
 }
