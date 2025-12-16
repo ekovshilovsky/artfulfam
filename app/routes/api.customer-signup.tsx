@@ -13,37 +13,64 @@ export async function action({request, context}: ActionFunctionArgs) {
       return data({error: 'Invalid email address'}, {status: 400});
     }
 
-    const {storefront} = context;
+    const {env} = context;
+    const adminToken = env.PRIVATE_ADMIN_API_TOKEN;
+    const shopDomain = env.PUBLIC_STORE_DOMAIN;
 
-    // Try to create customer with coming-soon tag
-    const {customerCreate} = await storefront.mutate(CUSTOMER_CREATE_MUTATION, {
-      variables: {
-        input: {
-          email,
-          tags: ['coming-soon-signup'],
-        },
-      },
-    });
-
-    // Check if customer already exists
-    const existingCustomerError = customerCreate?.customerUserErrors?.find(
-      (error) => error.code === 'TAKEN',
-    );
-
-    if (existingCustomerError) {
-      // Customer already exists
-      return data({
-        success: true,
-        isNewCustomer: false,
-        message: 'Already signed up!',
-      });
+    if (!adminToken || !shopDomain) {
+      console.error('Missing Admin API credentials');
+      return data({error: 'Server configuration error'}, {status: 500});
     }
 
-    if (customerCreate?.customerUserErrors?.length) {
-      const errorMessage =
-        customerCreate.customerUserErrors[0].message ||
-        'Failed to sign up';
-      return data({error: errorMessage}, {status: 400});
+    // Use Admin API to create customer with tags
+    const adminResponse = await fetch(
+      `https://${shopDomain}/admin/api/2024-01/graphql.json`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Access-Token': adminToken,
+        },
+        body: JSON.stringify({
+          query: CUSTOMER_CREATE_MUTATION,
+          variables: {
+            input: {
+              email,
+              tags: ['coming-soon-signup'],
+              emailMarketingConsent: {
+                marketingState: 'SUBSCRIBED',
+                marketingOptInLevel: 'SINGLE_OPT_IN',
+              },
+            },
+          },
+        }),
+      },
+    );
+
+    const adminData = await adminResponse.json();
+
+    if (adminData.errors) {
+      console.error('Admin API errors:', adminData.errors);
+      return data({error: 'Failed to sign up'}, {status: 500});
+    }
+
+    const userErrors = adminData.data?.customerCreate?.userErrors;
+    if (userErrors?.length) {
+      // Check if customer already exists
+      const takenError = userErrors.find((err: any) => 
+        err.message?.toLowerCase().includes('taken') || 
+        err.message?.toLowerCase().includes('already')
+      );
+      
+      if (takenError) {
+        return data({
+          success: true,
+          isNewCustomer: false,
+          message: 'Already signed up!',
+        });
+      }
+
+      return data({error: userErrors[0].message}, {status: 400});
     }
 
     // Successfully created new customer
@@ -58,18 +85,18 @@ export async function action({request, context}: ActionFunctionArgs) {
   }
 }
 
-const CUSTOMER_CREATE_MUTATION = `#graphql
-  mutation customerCreate($input: CustomerCreateInput!) {
+const CUSTOMER_CREATE_MUTATION = `
+  mutation customerCreate($input: CustomerInput!) {
     customerCreate(input: $input) {
       customer {
         id
         email
+        tags
       }
-      customerUserErrors {
-        code
+      userErrors {
         field
         message
       }
     }
   }
-` as const;
+`;
