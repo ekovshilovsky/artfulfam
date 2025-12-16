@@ -8,9 +8,10 @@ import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
+import {Hero} from '~/components/Hero';
 
 export const meta: MetaFunction = () => {
-  return [{title: 'Hydrogen | Home'}];
+  return [{title: 'ArtfulFam | Kids Art Print on Demand'}];
 };
 
 export async function loader({context}: LoaderFunctionArgs) {
@@ -25,10 +26,10 @@ export async function loader({context}: LoaderFunctionArgs) {
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   return (
-    <div className="home">
-      <FeaturedCollection collection={data.featuredCollection} />
+    <main className="min-h-screen">
+      <Hero />
       <RecommendedProducts products={data.recommendedProducts} />
-    </div>
+    </main>
   );
 }
 
@@ -59,35 +60,87 @@ function RecommendedProducts({
   products: Promise<RecommendedProductsQuery>;
 }) {
   return (
-    <div className="recommended-products">
-      <h2>Recommended Products</h2>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={products}>
-          {({products}) => (
-            <div className="recommended-products-grid">
-              {products.nodes.map((product) => (
-                <Link
-                  key={product.id}
-                  className="recommended-product"
-                  to={`/products/${product.handle}`}
-                >
-                  <Image
-                    data={product.images.nodes[0]}
-                    aspectRatio="1/1"
-                    sizes="(min-width: 45em) 20vw, 50vw"
-                  />
-                  <h4>{product.title}</h4>
-                  <small>
-                    <Money data={product.priceRange.minVariantPrice} />
-                  </small>
-                </Link>
-              ))}
-            </div>
-          )}
-        </Await>
-      </Suspense>
-      <br />
-    </div>
+    <section className="py-16 md:py-24">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-5xl font-bold mb-4 font-display">
+            Featured Artwork
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Each piece is carefully selected and available on various products
+          </p>
+        </div>
+
+        <Suspense fallback={
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Loading products...</p>
+          </div>
+        }>
+          <Await resolve={products}>
+            {({products}) => {
+              if (products.nodes.length === 0) {
+                return (
+                  <div className="text-center py-12">
+                    <p className="text-lg text-muted-foreground">
+                      Check back soon for amazing artwork from our young artists!
+                    </p>
+                  </div>
+                );
+              }
+              
+              return (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {products.nodes.map((product) => (
+                      <Link
+                        key={product.id}
+                        to={`/products/${product.handle}`}
+                        className="group overflow-hidden border-2 border-border rounded-lg hover:border-primary transition-colors duration-300"
+                      >
+                        <div className="relative aspect-square overflow-hidden bg-muted">
+                          {product.images.nodes[0] ? (
+                            <Image
+                              data={product.images.nodes[0]}
+                              aspectRatio="1/1"
+                              sizes="(min-width: 45em) 25vw, 50vw"
+                              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                              No image
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-bold text-lg mb-1">{product.title}</h3>
+                          <div className="flex items-center justify-between mt-3">
+                            <span className="font-bold text-primary">
+                              <Money data={product.priceRange.minVariantPrice} />
+                            </span>
+                            <span className="text-sm border border-current px-3 py-1 rounded-md group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-colors">
+                              View
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                  
+                  <div className="text-center mt-12">
+                    <Link
+                      to="/collections"
+                      className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-transparent hover:bg-accent hover:text-accent-foreground h-12 px-8"
+                    >
+                      View All Artwork
+                    </Link>
+                  </div>
+                </>
+              );
+            }}
+          </Await>
+        </Suspense>
+      </div>
+    </section>
   );
 }
 

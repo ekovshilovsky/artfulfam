@@ -78,6 +78,38 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+/* Base styles */
+body {
+  font-family: 'Fredoka', system-ui, sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  max-width: 1280px;
+}
+
 img {
   border-radius: 4px;
 }

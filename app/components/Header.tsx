@@ -9,12 +9,17 @@ type Viewport = 'desktop' | 'mobile';
 export function Header({header, isLoggedIn, cart}: HeaderProps) {
   const {shop, menu} = header;
   return (
-    <header className="header">
-      <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
-        <strong>{shop.name}</strong>
-      </NavLink>
-      <HeaderMenu menu={menu} viewport="desktop" />
-      <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
+    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-border">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <NavLink prefetch="intent" to="/" end className="flex items-center gap-2">
+          <img src="/logos/svg/Artboard 1.svg" alt="ArtfulFam" className="h-10 w-auto" />
+          <div className="text-2xl font-bold text-primary font-display hidden sm:block">
+            ArtfulFam
+          </div>
+        </NavLink>
+        <HeaderMenu menu={menu} viewport="desktop" />
+        <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
+      </div>
     </header>
   );
 }
@@ -44,8 +49,8 @@ export function HeaderMenu({
           end
           onClick={closeAside}
           prefetch="intent"
-          style={activeLinkStyle}
           to="/"
+          className="text-sm font-medium hover:text-primary transition-colors"
         >
           Home
         </NavLink>
@@ -61,12 +66,11 @@ export function HeaderMenu({
             : item.url;
         return (
           <NavLink
-            className="header-menu-item"
+            className="text-sm font-medium hover:text-primary transition-colors"
             end
             key={item.id}
             onClick={closeAside}
             prefetch="intent"
-            style={activeLinkStyle}
             to={url}
           >
             {item.title}
@@ -82,14 +86,18 @@ function HeaderCtas({
   cart,
 }: Pick<HeaderProps, 'isLoggedIn' | 'cart'>) {
   return (
-    <nav className="header-ctas" role="navigation">
+    <div className="flex items-center gap-1">
       <HeaderMenuMobileToggle />
-      <NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
+      <NavLink 
+        prefetch="intent" 
+        to="/account"
+        className="text-sm font-medium hover:text-primary transition-colors hidden md:block"
+      >
         {isLoggedIn ? 'Account' : 'Sign in'}
       </NavLink>
       <SearchToggle />
       <CartToggle cart={cart} />
-    </nav>
+    </div>
   );
 }
 
@@ -164,15 +172,3 @@ const FALLBACK_HEADER_MENU = {
   ],
 };
 
-function activeLinkStyle({
-  isActive,
-  isPending,
-}: {
-  isActive: boolean;
-  isPending: boolean;
-}) {
-  return {
-    fontWeight: isActive ? 'bold' : '',
-    color: isPending ? 'grey' : 'black',
-  };
-}
