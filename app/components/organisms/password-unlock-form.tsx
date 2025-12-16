@@ -51,6 +51,7 @@ export function PasswordUnlockForm({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          autoComplete="current-password"
           className="bg-background text-foreground border-0 h-12 w-full rounded-md px-4 focus:outline-none focus:ring-2 focus:ring-primary-foreground"
         />
         {error && <p className="text-sm text-destructive-foreground bg-destructive/20 px-3 py-2 rounded-md">{error}</p>}
