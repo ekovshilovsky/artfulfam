@@ -42,7 +42,7 @@ export function EmailSignupForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
       <div className="space-y-2">
         <input
           id="email"
