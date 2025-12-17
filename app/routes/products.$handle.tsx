@@ -275,7 +275,14 @@ function ProductForm({
         options={product.options}
         variants={variants}
       >
-        {({option}) => <ProductOptions key={option.name} option={option} />}
+        {({option}) => (
+          <ProductOptions
+            key={option.name}
+            option={option}
+            productOptions={product.options}
+            variants={variants}
+          />
+        )}
       </VariantSelector>
       
       <AddToCartButton
@@ -300,12 +307,25 @@ function ProductForm({
   );
 }
 
-function ProductOptions({option}: {option: VariantOption}) {
+function ProductOptions({
+  option,
+  productOptions,
+  variants,
+}: {
+  option: VariantOption;
+  productOptions: Array<{name: string; values: string[]}>;
+  variants: Array<ProductVariantFragment>;
+}) {
+  const values =
+    option.name.trim().toLowerCase() === 'size'
+      ? orderValuesLikeShopify(option, productOptions, variants)
+      : option.values;
+
   return (
     <div className="space-y-2" key={option.name}>
       <h3 className="text-sm font-medium">{option.name}</h3>
       <div className="flex flex-wrap gap-2">
-        {option.values.map(({value, isAvailable, isActive, to}) => {
+        {values.map(({value, isAvailable, isActive, to}) => {
           return (
             <Link
               key={option.name + value}
@@ -334,6 +354,190 @@ function ProductOptions({option}: {option: VariantOption}) {
       </div>
     </div>
   );
+}
+
+function orderValuesLikeShopify(
+  option: VariantOption,
+  productOptions: Array<{name: string; values: string[]}>,
+  variants: Array<ProductVariantFragment>,
+) {
+  const nameKey = option.name.trim().toLowerCase();
+
+  // Source of truth for ordering: variant "position" order.
+  // Storefront API generally returns `variants.nodes` in the same order as Shopify Admin.
+  const variantOrder = deriveOptionOrderFromVariants(nameKey, variants);
+
+  // Fall back to Shopify's option values array if we don't have variants yet.
+  const shopifyValues =
+    variantOrder.length > 0
+      ? variantOrder
+      : productOptions.find((o) => o.name.trim().toLowerCase() === nameKey)?.values || [];
+  const order = new Map<string, number>();
+  shopifyValues.forEach((v, i) => order.set(v, i));
+
+  // If Shopify's order is not size-sensible for a purely size-like set,
+  // sort by our size comparator instead.
+  const kind = detectSizeKind(shopifyValues);
+  if (kind) {
+    const shopifySortedByComparator = [...shopifyValues].sort(compareSizeValue);
+    const alreadySensible =
+      shopifyValues.length === shopifySortedByComparator.length &&
+      shopifyValues.every((v, i) => v === shopifySortedByComparator[i]);
+    if (!alreadySensible) {
+      return [...option.values].sort((a, b) => compareSizeValue(a.value, b.value));
+    }
+  }
+
+  // Primary: Shopify-defined option value order (Admin order).
+  // Secondary: our size comparator (keeps reasonable ordering for any values not found).
+  return [...option.values].sort((a, b) => {
+    const ai = order.get(a.value);
+    const bi = order.get(b.value);
+    if (ai != null && bi != null) return ai - bi;
+    if (ai != null) return -1;
+    if (bi != null) return 1;
+    return compareSizeValue(a.value, b.value);
+  });
+}
+
+function deriveOptionOrderFromVariants(
+  optionNameLower: string,
+  variants: Array<ProductVariantFragment>,
+): string[] {
+  if (!variants?.length) return [];
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+  for (const v of variants) {
+    const match = v.selectedOptions?.find(
+      (o) => String(o.name || '').trim().toLowerCase() === optionNameLower,
+    );
+    const value = String(match?.value || '').trim();
+    if (!value || seen.has(value)) continue;
+    seen.add(value);
+    ordered.push(value);
+  }
+  return ordered;
+}
+
+function maybeSortSizeValues<T extends {value: string}>(values: T[]): T[] {
+  // Shopify typically preserves the option value order defined in Admin.
+  // Only apply sorting when we can confidently detect a purely "size-like" set
+  // that is out of order (numeric, dimensions, or standard apparel sizes).
+  const raw = values.map((v) => v.value);
+  const kind = detectSizeKind(raw);
+  if (!kind) return values;
+
+  const sorted = [...values].sort((a, b) => compareSizeValue(a.value, b.value));
+  // If it's already in correct order, keep Shopify's order exactly.
+  return isSameOrder(values, sorted) ? values : sorted;
+}
+
+function compareSizeValue(aRaw: string, bRaw: string): number {
+  const a = String(aRaw || '').trim();
+  const b = String(bRaw || '').trim();
+  if (a === b) return 0;
+
+  // Common apparel size ordering
+  const apparelOrder: Record<string, number> = {
+    xxs: 1,
+    xs: 2,
+    s: 3,
+    m: 4,
+    l: 5,
+    xl: 6,
+    xxl: 7,
+    '2xl': 7,
+    xxxl: 8,
+    '3xl': 8,
+    '4xl': 9,
+    '5xl': 10,
+  };
+  const aKey = a.toLowerCase().replace(/\s+/g, '');
+  const bKey = b.toLowerCase().replace(/\s+/g, '');
+  const aApparel = apparelOrder[aKey];
+  const bApparel = apparelOrder[bKey];
+  if (aApparel != null && bApparel != null) return aApparel - bApparel;
+  if (aApparel != null) return -1;
+  if (bApparel != null) return 1;
+
+  // Pure numbers: "8", "10", "12"
+  const aNum = parsePureNumber(a);
+  const bNum = parsePureNumber(b);
+  if (aNum != null && bNum != null) return aNum - bNum;
+  if (aNum != null) return -1;
+  if (bNum != null) return 1;
+
+  // Dimensions: 6"x6", 10"×10", 8 x 10
+  const aDim = parseDimensions(a);
+  const bDim = parseDimensions(b);
+  if (aDim && bDim) {
+    if (aDim.w !== bDim.w) return aDim.w - bDim.w;
+    if (aDim.h !== bDim.h) return aDim.h - bDim.h;
+    return 0;
+  }
+  if (aDim) return -1;
+  if (bDim) return 1;
+
+  // Natural-ish fallback (handles embedded numbers / leading zeros)
+  return a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'});
+}
+
+function isSameOrder<T>(a: T[], b: T[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+function parsePureNumber(value: string): number | null {
+  // supports leading zeros and decimals
+  if (!/^\d+(?:\.\d+)?$/.test(value)) return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function parseDimensions(value: string): {w: number; h: number} | null {
+  // Handles: 6"x6", 6"×6", 6 x 6, 6×6, 8"×10"
+  const m = value
+    .replace(/\s+/g, '')
+    .match(/^(\d+(?:\.\d+)?)(?:\"|in)?(?:x|×)(\d+(?:\.\d+)?)(?:\"|in)?$/i);
+  if (!m) return null;
+  const w = Number(m[1]);
+  const h = Number(m[2]);
+  if (!Number.isFinite(w) || !Number.isFinite(h)) return null;
+  return {w, h};
+}
+
+function detectSizeKind(values: string[]): 'apparel' | 'number' | 'dimension' | null {
+  const cleaned = values.map((v) => String(v || '').trim()).filter(Boolean);
+  if (cleaned.length < 2) return null;
+
+  const allNumbers = cleaned.every((v) => parsePureNumber(v) != null);
+  if (allNumbers) return 'number';
+
+  const allDims = cleaned.every((v) => parseDimensions(v) != null);
+  if (allDims) return 'dimension';
+
+  const apparelOrder: Record<string, number> = {
+    xxs: 1,
+    xs: 2,
+    s: 3,
+    m: 4,
+    l: 5,
+    xl: 6,
+    xxl: 7,
+    '2xl': 7,
+    xxxl: 8,
+    '3xl': 8,
+    '4xl': 9,
+    '5xl': 10,
+  };
+  const allApparel = cleaned.every((v) => apparelOrder[v.toLowerCase().replace(/\s+/g, '')] != null);
+  if (allApparel) return 'apparel';
+
+  // Mixed/custom labels: keep Shopify order.
+  return null;
 }
 
 function AddToCartButton({

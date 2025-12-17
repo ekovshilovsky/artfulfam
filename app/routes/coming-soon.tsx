@@ -20,14 +20,19 @@ export default function ComingSoon() {
   const [showSmsModal, setShowSmsModal] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [signupToken, setSignupToken] = useState('');
 
   const handleEmailSuccess = (data: {
     email: string;
     isNewCustomer: boolean;
+    smsEnabled: boolean;
+    collectPhone: boolean;
+    signupToken: string;
   }) => {
     setUserEmail(data.email);
+    setSignupToken(data.signupToken);
 
-    if (data.isNewCustomer) {
+    if (data.collectPhone) {
       // New customer: show SMS modal first, thank you after modal closes
       setShowSmsModal(true);
     } else {
@@ -56,22 +61,6 @@ export default function ComingSoon() {
       <div className="max-w-2xl w-full mx-auto px-4 py-8 space-y-8 relative z-10">
         {/* Logo/Branding */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent px-4 py-2 rounded-full mb-6 animate-fade-in">
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-              />
-            </svg>
-            <span className="text-sm font-medium">Art by Kids, For Everyone</span>
-          </div>
           <h1 className="text-5xl md:text-6xl font-bold mb-4 font-display">ArtfulFam</h1>
           <p className="text-xl text-muted-foreground font-handwriting">
             Celebrating creativity, one masterpiece at a time
@@ -141,6 +130,7 @@ export default function ComingSoon() {
         open={showSmsModal}
         onClose={handleSmsModalClose}
         email={userEmail}
+        signupToken={signupToken}
       />
     </div>
   );

@@ -33,7 +33,7 @@ export function Layout({
     <>
       <CartAside cart={cart} />
       <SearchAside />
-      <MobileMenuAside menu={header.menu} />
+      {header?.menu ? <MobileMenuAside menu={header.menu} /> : null}
       <Header header={header} cart={cart} isLoggedIn={isLoggedIn} />
       <main className="container mx-auto px-4">{children}</main>
       <Suspense>

@@ -1,6 +1,6 @@
-import { useLoaderData, Link } from 'react-router';
+import {useLoaderData, Link} from 'react-router';
 import {data} from 'react-router';
-import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
+import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';
 import {Pagination, getPaginationVariables, Image} from '@shopify/hydrogen';
 import type {CollectionFragment} from 'storefrontapi.generated';
 
@@ -20,29 +20,54 @@ export default function Collections() {
   const {collections} = useLoaderData<typeof loader>();
 
   return (
-    <div className="collections">
-      <h1>Collections</h1>
-      <Pagination connection={collections}>
-        {({nodes, isLoading, PreviousLink, NextLink}) => (
-          <div>
-            <PreviousLink>
-              {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
-            </PreviousLink>
-            <CollectionsGrid collections={nodes} />
-            <NextLink>
-              {isLoading ? 'Loading...' : <span>Load more ↓</span>}
-            </NextLink>
+    <main className="min-h-screen">
+      <section className="py-12 md:py-16">
+        <div className="container mx-auto px-4">
+          <div className="mb-10">
+            <h1 className="text-3xl md:text-5xl font-bold font-display text-foreground">
+              Collections
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Browse artwork by collection.
+            </p>
           </div>
-        )}
-      </Pagination>
-    </div>
+
+          <Pagination connection={collections}>
+            {({nodes, isLoading, PreviousLink, NextLink}) => (
+              <div className="space-y-6">
+                <div>
+                  <PreviousLink className="inline-flex text-sm text-muted-foreground hover:text-primary transition-colors">
+                    {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
+                  </PreviousLink>
+                </div>
+
+                <CollectionsGrid collections={nodes} />
+
+                <div>
+                  <NextLink className="inline-flex text-sm text-muted-foreground hover:text-primary transition-colors">
+                    {isLoading ? 'Loading...' : <span>Load more ↓</span>}
+                  </NextLink>
+                </div>
+              </div>
+            )}
+          </Pagination>
+        </div>
+      </section>
+    </main>
   );
 }
 
 function CollectionsGrid({collections}: {collections: CollectionFragment[]}) {
+  // Shopify often has an internal/default "Home page" collection; we don't want to display it as a tile.
+  const visibleCollections = collections.filter((c) => {
+    const handle = String(c.handle || '').toLowerCase();
+    const title = String(c.title || '').toLowerCase();
+    return handle !== 'home-page' && title !== 'home page';
+  });
+
   return (
-    <div className="collections-grid">
-      {collections.map((collection, index) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {visibleCollections.map((collection, index) => (
         <CollectionItem
           key={collection.id}
           collection={collection}
@@ -62,20 +87,29 @@ function CollectionItem({
 }) {
   return (
     <Link
-      className="collection-item"
+      className="group overflow-hidden border-2 border-border rounded-lg hover:border-primary transition-colors duration-300 bg-background"
       key={collection.id}
       to={`/collections/${collection.handle}`}
       prefetch="intent"
     >
-      {collection.image && (
-        <Image
-          alt={collection.image.altText || collection.title}
-          aspectRatio="1/1"
-          data={collection.image}
-          loading={index < 3 ? 'eager' : undefined}
-        />
-      )}
-      <h5>{collection.title}</h5>
+      <div className="relative aspect-square overflow-hidden bg-muted">
+        {collection.image ? (
+          <Image
+            alt={collection.image.altText || collection.title}
+            aspectRatio="1/1"
+            data={collection.image}
+            loading={index < 6 ? 'eager' : undefined}
+            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+            No image
+          </div>
+        )}
+      </div>
+      <div className="p-4">
+        <h3 className="font-medium text-lg tracking-tight">{collection.title}</h3>
+      </div>
     </Link>
   );
 }

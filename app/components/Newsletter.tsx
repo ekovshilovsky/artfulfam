@@ -1,10 +1,10 @@
-import {useState} from 'react';
+import {useRef, useState} from 'react';
 
 export function Newsletter() {
-  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -12,11 +12,18 @@ export function Newsletter() {
     setError('');
     setSuccess(false);
 
+    const email = String(inputRef.current?.value || '').trim();
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address.');
+      setLoading(false);
+      return;
+    }
+
     // TODO: Implement newsletter signup with Shopify Customer API or email service
     // For now, just show success
     setTimeout(() => {
       setSuccess(true);
-      setEmail('');
+      if (inputRef.current) inputRef.current.value = '';
       setLoading(false);
       setTimeout(() => setSuccess(false), 5000);
     }, 1000);
@@ -37,8 +44,7 @@ export function Newsletter() {
             <input
               type="email"
               placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              ref={inputRef}
               required
               className="bg-background text-foreground border-0 h-12 flex-1 rounded-md px-4 focus:outline-none focus:ring-2 focus:ring-primary-foreground"
               disabled={loading}

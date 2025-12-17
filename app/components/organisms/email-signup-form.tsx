@@ -1,7 +1,13 @@
 import {useState} from 'react';
 
 interface EmailSignupFormProps {
-  onSuccess?: (data: {email: string; isNewCustomer: boolean}) => void;
+  onSuccess?: (data: {
+    email: string;
+    isNewCustomer: boolean;
+    smsEnabled: boolean;
+    collectPhone: boolean;
+    signupToken: string;
+  }) => void;
 }
 
 export function EmailSignupForm({onSuccess}: EmailSignupFormProps) {
@@ -30,6 +36,9 @@ export function EmailSignupForm({onSuccess}: EmailSignupFormProps) {
       const data = (await response.json()) as {
         success?: boolean;
         isNewCustomer?: boolean;
+        smsEnabled?: boolean;
+        collectPhone?: boolean;
+        signupToken?: string;
         error?: string;
       };
 
@@ -40,7 +49,15 @@ export function EmailSignupForm({onSuccess}: EmailSignupFormProps) {
       }
 
       // Pass result to parent - parent handles the next step
-      onSuccess?.({email, isNewCustomer: data.isNewCustomer ?? false});
+      onSuccess?.({
+        email,
+        isNewCustomer: data.isNewCustomer ?? false,
+        smsEnabled: data.smsEnabled ?? false,
+        collectPhone: data.collectPhone ?? false,
+        signupToken: data.signupToken ?? '',
+      });
+
+      setIsSubmitting(false);
     } catch (err) {
       setError('An error occurred. Please try again.');
       setIsSubmitting(false);

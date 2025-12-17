@@ -14,9 +14,10 @@ interface SmsConsentModalProps {
   open: boolean;
   onClose: () => void;
   email: string;
+  signupToken: string;
 }
 
-export function SmsConsentModal({open, onClose, email}: SmsConsentModalProps) {
+export function SmsConsentModal({open, onClose, signupToken}: SmsConsentModalProps) {
   const [phone, setPhone] = useState('');
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState('');
@@ -97,7 +98,7 @@ export function SmsConsentModal({open, onClose, email}: SmsConsentModalProps) {
       const response = await fetch('/api/update-customer-sms', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({email, phone}),
+        body: JSON.stringify({signupToken, phone, consent}),
       });
 
       const data = await response.json();

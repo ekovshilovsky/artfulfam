@@ -20,7 +20,14 @@ export async function loader({context}: LoaderFunctionArgs) {
   const {storefront} = context;
   const {collections} = await storefront.query(FEATURED_COLLECTION_QUERY);
   const featuredCollection = collections.nodes[0];
-  const recommendedProducts = storefront.query(RECOMMENDED_PRODUCTS_QUERY);
+  // Prefer explicitly featured products (tagged in Shopify), with a safe fallback.
+  const featuredProducts = await storefront.query(RECOMMENDED_PRODUCTS_QUERY, {
+    variables: {query: 'tag:featured-homepage'},
+  });
+  const recommendedProducts =
+    featuredProducts?.products?.nodes?.length > 0
+      ? Promise.resolve(featuredProducts)
+      : storefront.query(RECOMMENDED_PRODUCTS_QUERY, {variables: {query: null}});
 
   return {featuredCollection, recommendedProducts};
 }
@@ -116,7 +123,7 @@ function RecommendedProducts({
                           )}
                         </div>
                         <div className="p-4">
-                          <h3 className="font-bold text-lg mb-1">{product.title}</h3>
+                          <h3 className="font-medium text-lg mb-1 tracking-tight">{product.title}</h3>
                           <div className="flex items-center justify-between mt-3">
                             <span className="font-bold text-primary">
                               <Money data={product.priceRange.minVariantPrice} />
@@ -192,9 +199,13 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
       }
     }
   }
-  query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
+  query RecommendedProducts (
+    $country: CountryCode,
+    $language: LanguageCode,
+    $query: String
+  )
     @inContext(country: $country, language: $language) {
-    products(first: 4, sortKey: UPDATED_AT, reverse: true) {
+    products(first: 4, sortKey: UPDATED_AT, reverse: true, query: $query) {
       nodes {
         ...RecommendedProduct
       }

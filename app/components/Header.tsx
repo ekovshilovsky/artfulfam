@@ -13,7 +13,7 @@ export function Header({header, isLoggedIn, cart}: HeaderProps) {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <NavLink prefetch="intent" to="/" end className="flex items-center gap-2">
           <img src="/logos/svg/Artboard 1.svg" alt="ArtfulFam" className="h-10 w-auto" />
-          <div className="text-2xl font-bold text-primary font-display hidden sm:block">
+          <div className="text-xl sm:text-2xl font-bold text-primary font-display">
             ArtfulFam
           </div>
         </NavLink>
@@ -59,11 +59,10 @@ export function HeaderMenu({
         if (!item.url) return null;
 
         // if the url is internal, we strip the domain
-        const url =
+        const isInternal =
           item.url.includes('myshopify.com') ||
-          item.url.includes(publicStoreDomain)
-            ? new URL(item.url).pathname
-            : item.url;
+          (publicStoreDomain && item.url.includes(publicStoreDomain));
+        const url = isInternal ? new URL(item.url).pathname : item.url;
         return (
           <NavLink
             className="text-sm font-medium hover:text-primary transition-colors"
@@ -110,23 +109,100 @@ function HeaderMenuMobileToggle() {
 }
 
 function SearchToggle() {
-  return <a href="#search-aside">Search</a>;
+  return (
+    <IconLink href="#search-aside" label="Search" className="ml-1">
+      <SearchIcon className="h-5 w-5" />
+    </IconLink>
+  );
 }
 
-function CartBadge({count}: {count: number}) {
-  return <a href="#cart-aside">Cart {count}</a>;
+function CartButton({count}: {count: number}) {
+  return (
+    <IconLink href="#cart-aside" label="Cart" className="relative ml-1">
+      <CartIcon className="h-5 w-5" />
+      {count > 0 ? (
+        <span
+          className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] leading-4 text-center"
+          aria-label={`${count} items in cart`}
+        >
+          {count > 99 ? '99+' : count}
+        </span>
+      ) : null}
+    </IconLink>
+  );
 }
 
 function CartToggle({cart}: Pick<HeaderProps, 'cart'>) {
   return (
-    <Suspense fallback={<CartBadge count={0} />}>
+    <Suspense fallback={<CartButton count={0} />}>
       <Await resolve={cart}>
         {(cart) => {
-          if (!cart) return <CartBadge count={0} />;
-          return <CartBadge count={cart.totalQuantity || 0} />;
+          if (!cart) return <CartButton count={0} />;
+          return <CartButton count={cart.totalQuantity || 0} />;
         }}
       </Await>
     </Suspense>
+  );
+}
+
+function IconLink({
+  href,
+  label,
+  className,
+  children,
+}: {
+  href: string;
+  label: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      aria-label={label}
+      className={`inline-flex items-center justify-center h-10 w-10 rounded-md hover:bg-accent transition-colors ${className || ''}`}
+    >
+      <span className="sr-only">{label}</span>
+      {children}
+    </a>
+  );
+}
+
+function SearchIcon({className}: {className?: string}) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="7" />
+      <path d="M20 20l-3.5-3.5" />
+    </svg>
+  );
+}
+
+function CartIcon({className}: {className?: string}) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M6 7h15l-1.5 9h-11z" />
+      <path d="M6 7l-1-3H2" />
+      <circle cx="9" cy="20" r="1" />
+      <circle cx="18" cy="20" r="1" />
+    </svg>
   );
 }
 

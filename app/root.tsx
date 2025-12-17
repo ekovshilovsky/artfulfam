@@ -1,5 +1,5 @@
 import {data, redirect} from 'react-router';
-import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
+import type {LoaderFunctionArgs} from 'react-router';
 import {
   Links,
   Meta,
@@ -20,10 +20,17 @@ import {Layout} from '~/components/Layout';
 import tailwindCss from './styles/tailwind.css?url';
 
 export function links() {
+  const googleFontsHref =
+    // `display=optional` avoids a late font swap “snap” without blocking first render.
+    // Keep weights minimal to reduce download time.
+    'https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Caveat:wght@400;600;700&display=optional';
+
   return [
     {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
     {rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous'},
-    {rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Caveat:wght@400;500;600;700&display=swap'},
+    // Start the Google Fonts CSS request earlier to reduce visible font swapping.
+    {rel: 'preload', as: 'style', href: googleFontsHref},
+    {rel: 'stylesheet', href: googleFontsHref},
     {rel: 'stylesheet', href: tailwindCss},
     {rel: 'stylesheet', href: resetStyles},
     {rel: 'stylesheet', href: appStyles},
@@ -40,7 +47,14 @@ export function links() {
 }
 
 export async function loader({context, request}: LoaderFunctionArgs) {
-  const {storefront, session, cart, env} = context;
+  const {storefront, session, cart, env} = context as any;
+  if (!storefront || !session || !cart || !env) {
+    throw new Error(
+      'Hydrogen load context is missing required services (storefront/session/cart/env). ' +
+        'Ensure you are running `shopify hydrogen dev` and that your project env is configured.',
+    );
+  }
+
   const customerAccessToken = await session.get('customerAccessToken');
   const publicStoreDomain = env.PUBLIC_STORE_DOMAIN;
 
@@ -48,8 +62,10 @@ export async function loader({context, request}: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const isComingSoonPage = url.pathname === '/coming-soon';
   const isApiRoute = url.pathname.startsWith('/api/');
+  const isAuthRoute =
+    url.pathname.startsWith('/auth/') || url.pathname.startsWith('/admin/broker');
   
-  if (env.STORE_PASSWORD && !isComingSoonPage && !isApiRoute) {
+  if (env.STORE_PASSWORD && !isComingSoonPage && !isApiRoute && !isAuthRoute) {
     const storeAccess = await session.get('store_access');
     if (storeAccess !== 'granted') {
       return redirect('/coming-soon');
