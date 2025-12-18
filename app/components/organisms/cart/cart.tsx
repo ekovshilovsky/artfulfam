@@ -7,6 +7,7 @@ import type {
   OptimisticCartLine,
 } from '~/components/molecules/cart/cart-line-item';
 import {CartLineItemRow} from '~/components/molecules/cart/cart-line-item';
+import {Button} from '~/components/atoms/button';
 
 type CartLine = CartApiQueryFragment['lines']['nodes'][0];
 
@@ -83,21 +84,27 @@ function buildDisplayLines(
 function CartEmpty({layout}: {layout: CartMainProps['layout']}) {
   return (
     <div className="p-6">
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-muted-foreground mb-4">
         Looks like you haven&rsquo;t added anything yet.
       </p>
-      <a
-        href="/collections"
-        className="mt-4 inline-flex items-center justify-center rounded-full bg-black text-white h-12 px-6 text-sm font-medium w-full"
-        onClick={(event) => {
-          if (layout === 'aside') {
-            event.preventDefault();
-            window.location.href = '/collections';
-          }
-        }}
+      <Button
+        asChild
+        variant="default"
+        size="lg"
+        className="w-full rounded-full"
       >
-        Continue shopping
-      </a>
+        <a
+          href="/collections"
+          onClick={(event) => {
+            if (layout === 'aside') {
+              event.preventDefault();
+              window.location.href = '/collections';
+            }
+          }}
+        >
+          Continue shopping
+        </a>
+      </Button>
     </div>
   );
 }
@@ -105,13 +112,16 @@ function CartEmpty({layout}: {layout: CartMainProps['layout']}) {
 function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string | null}) {
   if (!checkoutUrl) return null;
   return (
-    <a
-      href={checkoutUrl}
-      target="_self"
-      className="mt-4 inline-flex items-center justify-center rounded-full bg-black text-white h-12 px-6 text-sm font-medium w-full"
+    <Button
+      asChild
+      variant="default"
+      size="lg"
+      className="w-full rounded-full mt-4"
     >
-      Check out
-    </a>
+      <a href={checkoutUrl} target="_self">
+        Check out
+      </a>
+    </Button>
   );
 }
 
@@ -160,11 +170,13 @@ function CartDrawer({
         )}
       </div>
 
-      <div className="border-t border-border px-6 py-5 bg-white">
+      <div className="border-t border-border px-6 py-6 bg-background">
         {cart ? (
           <>
             <CartDiscountSection discountCodes={cart.discountCodes} />
-            <CartEstimatedTotal cost={cart.cost} />
+            <div className="mt-4">
+              <CartEstimatedTotal cost={cart.cost} />
+            </div>
             <p className="mt-2 text-xs text-muted-foreground">
               Taxes and shipping calculated at checkout.
             </p>
@@ -172,8 +184,8 @@ function CartDrawer({
           </>
         ) : (
           <>
-            <div className="h-6 w-40 bg-muted rounded-md" />
-            <div className="mt-4 h-10 w-full bg-muted rounded-full" />
+            <div className="h-6 w-40 bg-muted rounded-md animate-pulse" />
+            <div className="mt-4 h-12 w-full bg-muted rounded-full animate-pulse" />
           </>
         )}
       </div>
@@ -208,9 +220,11 @@ function CartPage({
           </ul>
 
           {cart ? (
-            <div className="mt-8 border border-border rounded-2xl p-6">
+            <div className="mt-8 border-2 border-border rounded-2xl p-6 bg-background">
               <CartDiscountSection discountCodes={cart.discountCodes} />
-              <CartEstimatedTotal cost={cart.cost} />
+              <div className="mt-4">
+                <CartEstimatedTotal cost={cart.cost} />
+              </div>
               <p className="mt-2 text-xs text-muted-foreground">
                 Taxes and shipping calculated at checkout.
               </p>

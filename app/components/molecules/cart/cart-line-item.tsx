@@ -31,9 +31,9 @@ function OptimisticLineItem({line}: {line: OptimisticCartLine}) {
     ) || [];
 
   return (
-    <li className="py-4">
-      <div className="flex gap-3">
-        <div className="h-14 w-14 rounded-md bg-muted overflow-hidden border border-border flex-shrink-0">
+    <li className="py-5">
+      <div className="flex gap-4">
+        <div className="h-16 w-16 rounded-lg bg-muted overflow-hidden border border-border flex-shrink-0">
           {line.image?.url ? (
             <img
               src={line.image.url}
@@ -47,11 +47,11 @@ function OptimisticLineItem({line}: {line: OptimisticCartLine}) {
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-4">
-            <p className="text-sm font-medium leading-5">
+            <p className="text-sm font-semibold leading-5">
               {line.product.title}
             </p>
             {line.price ? (
-              <div className="text-sm font-medium whitespace-nowrap">
+              <div className="text-sm font-semibold whitespace-nowrap">
                 <Money withoutTrailingZeros data={line.price as any} />
               </div>
             ) : null}
@@ -122,15 +122,15 @@ function CartLineItem({line, layout}: {line: CartLine; layout: 'page' | 'aside'}
     ) || [];
 
   return (
-    <li className="py-4">
-      <div className="flex gap-3">
-        <div className="h-14 w-14 rounded-md bg-muted overflow-hidden border border-border flex-shrink-0">
+    <li className="py-5">
+      <div className="flex gap-4">
+        <div className="h-16 w-16 rounded-lg bg-muted overflow-hidden border border-border flex-shrink-0">
           {image ? (
             <Image
               alt={image.altText || product.title}
               data={image}
-              width={56}
-              height={56}
+              width={64}
+              height={64}
               loading="eager"
               className="h-full w-full object-cover"
             />
@@ -142,7 +142,7 @@ function CartLineItem({line, layout}: {line: CartLine; layout: 'page' | 'aside'}
             <Link
               prefetch="intent"
               to={lineItemUrl}
-              className="text-sm font-medium leading-5 hover:underline underline-offset-2"
+              className="text-sm font-semibold leading-5 hover:underline underline-offset-2"
               onClick={(event) => {
                 if (layout === 'aside') {
                   event.preventDefault();
@@ -152,7 +152,7 @@ function CartLineItem({line, layout}: {line: CartLine; layout: 'page' | 'aside'}
             >
               {product.title}
             </Link>
-            <div className="text-sm font-medium whitespace-nowrap">
+            <div className="text-sm font-semibold whitespace-nowrap">
               <Money withoutTrailingZeros data={line.cost.totalAmount} />
             </div>
           </div>
