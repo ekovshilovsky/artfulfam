@@ -8,9 +8,9 @@ import type {
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
-import {Hero} from '~/components/Hero';
-import {AboutSection} from '~/components/AboutSection';
-import {Newsletter} from '~/components/Newsletter';
+import {Hero} from '~/components/organisms/hero';
+import {AboutSection} from '~/components/organisms/about-section';
+import {Newsletter} from '~/components/organisms/newsletter';
 import {Container} from '~/components/atoms/container';
 
 export const meta: MetaFunction = () => {
