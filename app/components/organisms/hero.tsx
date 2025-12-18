@@ -1,5 +1,5 @@
-import { Link } from 'react-router';
-import {Container} from './atoms/container';
+import {Link} from 'react-router';
+import {Container} from '~/components/atoms/container';
 
 export function Hero() {
   return (

@@ -6,7 +6,7 @@ import {MetaFunction} from 'react-router';;
 import {data} from 'react-router';
 import type {ActionFunctionArgs} from '@shopify/hydrogen/oxygen';;
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
-import {CartMain} from '~/components/Cart';
+import {CartMain} from '~/components/organisms/cart/cart';
 import {Container} from '~/components/atoms/container';
 
 export const meta: MetaFunction = () => {

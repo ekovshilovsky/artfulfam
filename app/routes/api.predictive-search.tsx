@@ -3,8 +3,8 @@ import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
 import type {
   NormalizedPredictiveSearch,
   NormalizedPredictiveSearchResults,
-} from '~/components/Search';
-import {NO_PREDICTIVE_SEARCH_RESULTS} from '~/components/Search';
+} from '~/components/organisms/search';
+import {NO_PREDICTIVE_SEARCH_RESULTS} from '~/components/organisms/search';
 
 import type {
   PredictiveArticleFragment,

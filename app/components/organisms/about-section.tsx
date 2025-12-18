@@ -1,4 +1,4 @@
-import {Container} from './atoms/container';
+import {Container} from '~/components/atoms/container';
 
 export function AboutSection() {
   return (

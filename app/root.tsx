@@ -16,7 +16,7 @@ import type {HydrogenSession} from '../server';
 import favicon from '../public/favicon.svg';
 import resetStyles from './styles/reset.css?url';
 import appStyles from './styles/app.css?url';
-import {Layout} from '~/components/Layout';
+import {Layout} from '~/components/templates/Layout';
 import tailwindCss from './styles/tailwind.css?url';
 
 export function links() {

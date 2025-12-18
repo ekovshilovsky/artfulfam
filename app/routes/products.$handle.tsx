@@ -4,6 +4,7 @@ import {data, redirect} from 'react-router';
 import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
 import type { FetcherWithComponents } from 'react-router';
 import { Await, Link, useLoaderData } from 'react-router';
+import {usePrefetchCart} from '~/hooks/use-prefetch-cart';
 import type {
   ProductFragment,
   ProductVariantsQuery,
@@ -289,8 +290,29 @@ function ProductForm({
       <AddToCartButton
         disabled={!selectedVariant || !selectedVariant.availableForSale}
         onClick={() => {
-          window.location.href = window.location.href + '#cart-aside';
+          window.location.hash = 'cart-aside';
         }}
+        optimisticLine={
+          selectedVariant
+            ? {
+                merchandiseId: selectedVariant.id,
+                quantity: 1,
+                product: {
+                  title: product.title,
+                  handle: product.handle,
+                },
+                variantTitle: selectedVariant.title,
+                image: selectedVariant.image
+                  ? {
+                      url: selectedVariant.image.url,
+                      altText: selectedVariant.image.altText,
+                    }
+                  : null,
+                selectedOptions: selectedVariant.selectedOptions,
+                price: selectedVariant.price,
+              }
+            : null
+        }
         lines={
           selectedVariant
             ? [
@@ -547,13 +569,17 @@ function AddToCartButton({
   disabled,
   lines,
   onClick,
+  optimisticLine,
 }: {
   analytics?: unknown;
   children: React.ReactNode;
   disabled?: boolean;
   lines: CartLineInput[];
   onClick?: () => void;
+  optimisticLine?: unknown;
 }) {
+  const {prefetchCart, cancelPrefetch} = usePrefetchCart();
+
   return (
     <CartForm route="/cart" inputs={{lines}} action={CartForm.ACTIONS.LinesAdd}>
       {(fetcher: FetcherWithComponents<any>) => (
@@ -563,10 +589,21 @@ function AddToCartButton({
             type="hidden"
             value={JSON.stringify(analytics)}
           />
+          {optimisticLine ? (
+            <input
+              name="optimisticLine"
+              type="hidden"
+              value={JSON.stringify(optimisticLine)}
+            />
+          ) : null}
           <button
             type="submit"
             onClick={onClick}
-            disabled={disabled ?? fetcher.state !== 'idle'}
+            onMouseEnter={prefetchCart}
+            onFocus={prefetchCart}
+            onMouseLeave={cancelPrefetch}
+            onBlur={cancelPrefetch}
+            disabled={Boolean(disabled) || fetcher.state !== 'idle'}
             className="w-full inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {children}

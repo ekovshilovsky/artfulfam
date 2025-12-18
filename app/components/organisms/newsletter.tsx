@@ -1,5 +1,6 @@
 import {useRef, useState} from 'react';
-import {Container} from './atoms/container';
+import type {FormEvent} from 'react';
+import {Container} from '~/components/atoms/container';
 
 export function Newsletter() {
   const [loading, setLoading] = useState(false);
@@ -7,7 +8,7 @@ export function Newsletter() {
   const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');

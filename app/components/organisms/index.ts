@@ -1,3 +1,11 @@
 export {EmailSignupForm} from './email-signup-form';
 export {PasswordUnlockForm} from './password-unlock-form';
 export {SmsConsentModal} from './sms-consent-modal';
+export {CartMain} from './cart/cart';
+export {Aside} from './aside';
+export {Header, HeaderMenu} from './header';
+export {Footer} from './footer';
+export {Hero} from './hero';
+export {AboutSection} from './about-section';
+export {Newsletter} from './newsletter';
+export * from './search';

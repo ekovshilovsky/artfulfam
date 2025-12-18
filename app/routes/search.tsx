@@ -4,7 +4,7 @@ import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
 import { useLoaderData } from 'react-router';
 import {getPaginationVariables} from '@shopify/hydrogen';
 
-import {SearchForm, SearchResults, NoSearchResults} from '~/components/Search';
+import {SearchForm, SearchResults, NoSearchResults} from '~/components/organisms/search';
 import {Container} from '~/components/atoms/container';
 
 export const meta: MetaFunction = () => {

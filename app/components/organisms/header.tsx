@@ -1,7 +1,9 @@
-import { Await, NavLink, useMatches } from 'react-router';
+import {Await, NavLink, useMatches} from 'react-router';
 import {Suspense} from 'react';
-import type {LayoutProps} from './Layout';
-import {Container} from './atoms/container';
+import type {MouseEvent, ReactNode} from 'react';
+import type {LayoutProps} from '~/components/templates/Layout';
+import {Container} from '~/components/atoms/container';
+import {usePrefetchCart} from '~/hooks/use-prefetch-cart';
 
 type HeaderProps = Pick<LayoutProps, 'header' | 'cart' | 'isLoggedIn'>;
 
@@ -9,11 +11,16 @@ type Viewport = 'desktop' | 'mobile';
 
 export function Header({header, isLoggedIn, cart}: HeaderProps) {
   const {shop, menu} = header;
+  void shop;
   return (
     <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-border">
       <Container className="h-16 flex items-center justify-between">
         <NavLink prefetch="intent" to="/" end className="flex items-center gap-2">
-          <img src="/logos/svg/Artboard 1.svg" alt="ArtfulFam" className="h-10 w-auto" />
+          <img
+            src="/logos/svg/Artboard 1.svg"
+            alt="ArtfulFam"
+            className="h-10 w-auto"
+          />
           <div className="text-xl sm:text-2xl font-bold text-primary font-display">
             ArtfulFam
           </div>
@@ -36,7 +43,7 @@ export function HeaderMenu({
   const publicStoreDomain = root?.data?.publicStoreDomain;
   const className = `header-menu-${viewport}`;
 
-  function closeAside(event: React.MouseEvent<HTMLAnchorElement>) {
+  function closeAside(event: MouseEvent<HTMLAnchorElement>) {
     if (viewport === 'mobile') {
       event.preventDefault();
       window.location.href = event.currentTarget.href;
@@ -88,8 +95,8 @@ function HeaderCtas({
   return (
     <div className="flex items-center gap-1">
       <HeaderMenuMobileToggle />
-      <NavLink 
-        prefetch="intent" 
+      <NavLink
+        prefetch="intent"
         to="/account"
         className="text-sm font-medium hover:text-primary transition-colors hidden md:block"
       >
@@ -118,8 +125,18 @@ function SearchToggle() {
 }
 
 function CartButton({count}: {count: number}) {
+  const {prefetchCart, cancelPrefetch} = usePrefetchCart();
+
   return (
-    <IconLink href="#cart-aside" label="Cart" className="relative ml-1">
+    <IconLink
+      href="#cart-aside"
+      label="Cart"
+      className="relative ml-1"
+      onMouseEnter={prefetchCart}
+      onFocus={prefetchCart}
+      onMouseLeave={cancelPrefetch}
+      onBlur={cancelPrefetch}
+    >
       <CartIcon className="h-5 w-5" />
       {count > 0 ? (
         <span
@@ -151,17 +168,29 @@ function IconLink({
   label,
   className,
   children,
+  onMouseEnter,
+  onMouseLeave,
+  onFocus,
+  onBlur,
 }: {
   href: string;
   label: string;
   className?: string;
-  children: React.ReactNode;
+  children: ReactNode;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   return (
     <a
       href={href}
       aria-label={label}
       className={`inline-flex items-center justify-center h-10 w-10 rounded-md hover:bg-accent transition-colors ${className || ''}`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
     >
       <span className="sr-only">{label}</span>
       {children}
