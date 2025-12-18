@@ -1,13 +1,11 @@
 import {CartForm, Money} from '@shopify/hydrogen';
 import {useFetchers} from 'react-router';
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
-import {CartDiscountSection} from '~/components/molecules/cart/cart-discount-section';
 import type {
   DisplayCartLine,
   OptimisticCartLine,
 } from '~/components/molecules/cart/cart-line-item';
 import {CartLineItemRow} from '~/components/molecules/cart/cart-line-item';
-import {Button} from '~/components/atoms/button';
 
 type CartLine = CartApiQueryFragment['lines']['nodes'][0];
 
@@ -83,28 +81,22 @@ function buildDisplayLines(
 
 function CartEmpty({layout}: {layout: CartMainProps['layout']}) {
   return (
-    <div className="p-6">
-      <p className="text-sm text-muted-foreground mb-4">
-        Looks like you haven&rsquo;t added anything yet.
+    <div className="p-6 text-center">
+      <p className="text-base text-muted-foreground mb-6 font-display">
+        Your cart is empty
       </p>
-      <Button
-        asChild
-        variant="default"
-        size="lg"
-        className="w-full rounded-full"
+      <a
+        href="/collections"
+        onClick={(event) => {
+          if (layout === 'aside') {
+            event.preventDefault();
+            window.location.href = '/collections';
+          }
+        }}
+        className="w-full inline-flex items-center justify-center h-12 px-6 rounded-full bg-black text-white text-sm font-bold font-display hover:bg-black/90 transition-colors"
       >
-        <a
-          href="/collections"
-          onClick={(event) => {
-            if (layout === 'aside') {
-              event.preventDefault();
-              window.location.href = '/collections';
-            }
-          }}
-        >
-          Continue shopping
-        </a>
-      </Button>
+        Start shopping
+      </a>
     </div>
   );
 }
@@ -112,24 +104,21 @@ function CartEmpty({layout}: {layout: CartMainProps['layout']}) {
 function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string | null}) {
   if (!checkoutUrl) return null;
   return (
-    <Button
-      asChild
-      variant="default"
-      size="lg"
-      className="w-full rounded-full mt-4"
+    <a
+      href={checkoutUrl}
+      target="_self"
+      className="mt-4 w-full inline-flex items-center justify-center h-12 px-6 rounded-full bg-black text-white text-sm font-bold font-display hover:bg-black/90 transition-colors"
     >
-      <a href={checkoutUrl} target="_self">
-        Check out
-      </a>
-    </Button>
+      Check out
+    </a>
   );
 }
 
 function CartEstimatedTotal({cost}: {cost: CartApiQueryFragment['cost']}) {
   return (
-    <div className="flex items-baseline justify-between">
-      <div className="text-sm font-medium">Estimated total</div>
-      <div className="text-2xl font-semibold tabular-nums">
+    <div className="flex items-baseline justify-between mb-1">
+      <div className="text-base font-semibold font-display">Estimated total</div>
+      <div className="text-2xl font-bold tabular-nums font-display">
         {cost?.totalAmount ? (
           <Money withoutTrailingZeros data={cost.totalAmount} />
         ) : (
@@ -170,13 +159,10 @@ function CartDrawer({
         )}
       </div>
 
-      <div className="border-t border-border px-6 py-6 bg-background">
+      <div className="border-t-2 border-border px-6 py-6 bg-background">
         {cart ? (
           <>
-            <CartDiscountSection discountCodes={cart.discountCodes} />
-            <div className="mt-4">
-              <CartEstimatedTotal cost={cart.cost} />
-            </div>
+            <CartEstimatedTotal cost={cart.cost} />
             <p className="mt-2 text-xs text-muted-foreground">
               Taxes and shipping calculated at checkout.
             </p>
@@ -221,10 +207,7 @@ function CartPage({
 
           {cart ? (
             <div className="mt-8 border-2 border-border rounded-2xl p-6 bg-background">
-              <CartDiscountSection discountCodes={cart.discountCodes} />
-              <div className="mt-4">
-                <CartEstimatedTotal cost={cart.cost} />
-              </div>
+              <CartEstimatedTotal cost={cart.cost} />
               <p className="mt-2 text-xs text-muted-foreground">
                 Taxes and shipping calculated at checkout.
               </p>

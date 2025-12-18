@@ -25,15 +25,15 @@ export type LayoutProps = {
 
 function CartAsideHeading({cart}: {cart: LayoutProps['cart']}) {
   return (
-    <Suspense fallback={<span className="text-3xl font-bold">Cart</span>}>
+    <Suspense fallback={<span className="text-2xl font-bold font-display">Cart</span>}>
       <Await resolve={cart}>
         {(resolvedCart) => {
           const count = resolvedCart?.totalQuantity || 0;
           return (
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-3xl font-bold tracking-tight">Cart</span>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="text-2xl font-bold font-display">Cart</span>
               {count > 0 ? (
-                <span className="inline-flex items-center justify-center h-6 min-w-6 px-2 rounded-full bg-muted text-xs font-semibold tabular-nums">
+                <span className="inline-flex items-center justify-center h-6 min-w-6 px-2 rounded-full bg-black text-white text-xs font-bold tabular-nums">
                   {count > 99 ? '99+' : count}
                 </span>
               ) : null}

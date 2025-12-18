@@ -34,10 +34,10 @@ function CartLineRemoveButton({lineIds}: {lineIds: string[]}) {
     >
       <button
         type="submit"
-        className="inline-flex items-center justify-center h-9 w-9 rounded-md border border-border hover:bg-accent transition-colors"
+        className="inline-flex items-center justify-center h-9 w-9 rounded-lg border-2 border-border hover:bg-muted transition-colors"
         aria-label="Remove item"
       >
-        <TrashIcon className="h-4 w-4" />
+        <TrashIcon className="h-4 w-4 text-muted-foreground" />
       </button>
     </CartForm>
   );
@@ -59,55 +59,79 @@ export function CartQuantityControls({
   const fetcher = useFetcher();
   const [optimisticQuantity, setOptimisticQuantity] = useState(serverQuantity);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingUpdateRef = useRef<number | null>(null);
 
-  // Sync optimistic with server when server updates
+  // Sync optimistic with server when server updates (but only if no pending update)
   useEffect(() => {
-    setOptimisticQuantity(serverQuantity);
-  }, [serverQuantity]);
+    if (fetcher.state === 'idle' && pendingUpdateRef.current === null) {
+      setOptimisticQuantity(serverQuantity);
+    }
+  }, [serverQuantity, fetcher.state]);
+
+  // Clear pending update when fetch completes
+  useEffect(() => {
+    if (fetcher.state === 'idle') {
+      pendingUpdateRef.current = null;
+    }
+  }, [fetcher.state]);
 
   const updateQuantity = (newQuantity: number) => {
     if (newQuantity < 1) return;
 
-    // Update UI immediately (optimistic)
+    // Update UI immediately (optimistic) - this is instant
     setOptimisticQuantity(newQuantity);
+    pendingUpdateRef.current = newQuantity;
 
     // Clear pending debounce
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    // Debounce server update (500ms)
+    // Debounce server update (300ms) - fire and forget
     timeoutRef.current = setTimeout(() => {
       const formData = new FormData();
       formData.append('cartAction', CartForm.ACTIONS.LinesUpdate);
       formData.append('lines', JSON.stringify([{id: lineId, quantity: newQuantity}]));
-      fetcher.submit(formData, {method: 'POST', action: '/cart'});
-    }, 500);
+      
+      // Fire and forget - don't wait for response
+      fetcher.submit(formData, {
+        method: 'POST',
+        action: '/cart',
+      });
+    }, 300);
+  };
+
+  const handleDecrement = () => {
+    updateQuantity(optimisticQuantity - 1);
+  };
+
+  const handleIncrement = () => {
+    updateQuantity(optimisticQuantity + 1);
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="inline-flex items-center rounded-md border border-border overflow-hidden">
+    <div className="flex items-center gap-2.5">
+      <div className="inline-flex items-center rounded-lg border-2 border-border overflow-hidden bg-background">
         <button
           type="button"
-          onClick={() => updateQuantity(optimisticQuantity - 1)}
+          onClick={handleDecrement}
           aria-label="Decrease quantity"
           disabled={disabled || optimisticQuantity <= 1}
-          className="h-9 w-9 inline-flex items-center justify-center hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="h-9 w-9 inline-flex items-center justify-center hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-none font-semibold text-base select-none"
         >
           <span aria-hidden="true">−</span>
         </button>
 
-        <div className="h-9 min-w-10 px-3 inline-flex items-center justify-center text-sm tabular-nums">
+        <div className="h-9 min-w-10 px-3 inline-flex items-center justify-center text-sm font-semibold tabular-nums bg-white select-none">
           {optimisticQuantity}
         </div>
 
         <button
           type="button"
-          onClick={() => updateQuantity(optimisticQuantity + 1)}
+          onClick={handleIncrement}
           aria-label="Increase quantity"
           disabled={disabled}
-          className="h-9 w-9 inline-flex items-center justify-center hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="h-9 w-9 inline-flex items-center justify-center hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-none font-semibold text-base select-none"
         >
           <span aria-hidden="true">+</span>
         </button>
