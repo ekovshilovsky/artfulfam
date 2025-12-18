@@ -4,6 +4,8 @@ node_modules
 /dist
 /public/build
 /.mf
+.DS_Store
+**/.DS_Store
 .env
 .shopify
 .vercel
