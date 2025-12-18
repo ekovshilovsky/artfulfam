@@ -21,6 +21,7 @@ export function Aside({
     <div aria-modal className="overlay" id={id} role="dialog">
       <button
         className="close-outside"
+        aria-label="Close dialog"
         onClick={() => {
           history.go(-1);
           window.location.hash = '';
@@ -40,7 +41,14 @@ export function Aside({
 function CloseAside() {
   return (
     /* eslint-disable-next-line jsx-a11y/anchor-is-valid */
-    <a className="close" href="#" onChange={() => history.go(-1)}>
+    <a
+      className="close"
+      href="#"
+      onClick={(event) => {
+        event.preventDefault();
+        history.go(-1);
+      }}
+    >
       &times;
     </a>
   );

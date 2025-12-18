@@ -35,12 +35,12 @@ export async function loader({context}: LoaderFunctionArgs) {
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen">
       <Hero />
       <RecommendedProducts products={data.recommendedProducts} />
       <AboutSection />
       <Newsletter />
-    </main>
+    </div>
   );
 }
 

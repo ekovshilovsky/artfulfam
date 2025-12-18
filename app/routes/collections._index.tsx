@@ -20,7 +20,7 @@ export default function Collections() {
   const {collections} = useLoaderData<typeof loader>();
 
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen">
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-4">
           <div className="mb-10">
@@ -53,7 +53,7 @@ export default function Collections() {
           </Pagination>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
 
