@@ -3,6 +3,7 @@ import {data} from 'react-router';
 import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
 import { useLoaderData } from 'react-router';
 import {Image} from '@shopify/hydrogen';
+import {Container} from '~/components/atoms/container';
 
 export const meta: MetaFunction = ({data}) => {
   return [{title: `Hydrogen | ${data.article.title} article`}];
@@ -39,20 +40,22 @@ export default function Article() {
   }).format(new Date(article.publishedAt));
 
   return (
-    <div className="article">
-      <h1>
-        {title}
-        <span>
-          {publishedDate} &middot; {author?.name}
-        </span>
-      </h1>
+    <Container className="py-8 md:py-12">
+      <div className="article">
+        <h1>
+          {title}
+          <span>
+            {publishedDate} &middot; {author?.name}
+          </span>
+        </h1>
 
-      {image && <Image data={image} sizes="90vw" loading="eager" />}
-      <div
-        dangerouslySetInnerHTML={{__html: contentHtml}}
-        className="article"
-      />
-    </div>
+        {image && <Image data={image} sizes="90vw" loading="eager" />}
+        <div
+          dangerouslySetInnerHTML={{__html: contentHtml}}
+          className="article"
+        />
+      </div>
+    </Container>
   );
 }
 

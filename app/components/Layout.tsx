@@ -35,7 +35,7 @@ export function Layout({
       <SearchAside />
       {header?.menu ? <MobileMenuAside menu={header.menu} /> : null}
       <Header header={header} cart={cart} isLoggedIn={isLoggedIn} />
-      <main className="container mx-auto px-4">{children}</main>
+      <main className="flex-1">{children}</main>
       <Suspense>
         <Await resolve={footer}>
           {(footer) => <Footer menu={footer.menu} />}

@@ -1,7 +1,9 @@
+import {Container} from './atoms/container';
+
 export function AboutSection() {
   return (
     <section className="py-16 md:py-24 bg-secondary/30">
-      <div className="container mx-auto px-4">
+      <Container>
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-6 font-display">
             Supporting Young Artists
@@ -49,7 +51,7 @@ export function AboutSection() {
             </p>
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

@@ -1,6 +1,7 @@
 import {data} from 'react-router';
 import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
 import { useLoaderData, Link } from 'react-router';
+import {Container} from '~/components/atoms/container';
 
 export async function loader({context}: LoaderFunctionArgs) {
   const data = await context.storefront.query(POLICIES_QUERY);
@@ -17,19 +18,21 @@ export default function Policies() {
   const {policies} = useLoaderData<typeof loader>();
 
   return (
-    <div className="policies">
-      <h1>Policies</h1>
-      <div>
-        {policies.map((policy) => {
-          if (!policy) return null;
-          return (
-            <fieldset key={policy.id}>
-              <Link to={`/policies/${policy.handle}`}>{policy.title}</Link>
-            </fieldset>
-          );
-        })}
+    <Container className="py-8 md:py-12">
+      <div className="policies">
+        <h1>Policies</h1>
+        <div>
+          {policies.map((policy) => {
+            if (!policy) return null;
+            return (
+              <fieldset key={policy.id}>
+                <Link to={`/policies/${policy.handle}`}>{policy.title}</Link>
+              </fieldset>
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </Container>
   );
 }
 

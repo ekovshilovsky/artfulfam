@@ -20,6 +20,7 @@ import {
 } from '@shopify/hydrogen';
 import type {CartLineInput} from '@shopify/hydrogen/storefront-api-types';
 import {getVariantUrl} from '~/utils';
+import {Container} from '~/components/atoms/container';
 
 export const meta: MetaFunction = ({data}) => {
   return [{title: `${data.product.title} | ArtfulFam`}];
@@ -107,7 +108,7 @@ export default function Product() {
   const {product, variants} = useLoaderData<typeof loader>();
   const {selectedVariant} = product;
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12">
+    <Container className="py-8 md:py-12">
       <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
         <ProductImages product={product} selectedVariant={selectedVariant} />
         <ProductMain
@@ -116,7 +117,7 @@ export default function Product() {
           variants={variants}
         />
       </div>
-    </div>
+    </Container>
   );
 }
 

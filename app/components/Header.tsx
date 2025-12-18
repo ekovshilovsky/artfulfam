@@ -1,6 +1,7 @@
 import { Await, NavLink, useMatches } from 'react-router';
 import {Suspense} from 'react';
 import type {LayoutProps} from './Layout';
+import {Container} from './atoms/container';
 
 type HeaderProps = Pick<LayoutProps, 'header' | 'cart' | 'isLoggedIn'>;
 
@@ -10,7 +11,7 @@ export function Header({header, isLoggedIn, cart}: HeaderProps) {
   const {shop, menu} = header;
   return (
     <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-border">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+      <Container className="h-16 flex items-center justify-between">
         <NavLink prefetch="intent" to="/" end className="flex items-center gap-2">
           <img src="/logos/svg/Artboard 1.svg" alt="ArtfulFam" className="h-10 w-auto" />
           <div className="text-xl sm:text-2xl font-bold text-primary font-display">
@@ -19,7 +20,7 @@ export function Header({header, isLoggedIn, cart}: HeaderProps) {
         </NavLink>
         <HeaderMenu menu={menu} viewport="desktop" />
         <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
-      </div>
+      </Container>
     </header>
   );
 }

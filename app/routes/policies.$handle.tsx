@@ -3,6 +3,7 @@ import {data} from 'react-router';
 import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
 import { Link, useLoaderData } from 'react-router';
 import {type Shop} from '@shopify/hydrogen-react/storefront-api-types';
+import {Container} from '~/components/atoms/container';
 
 type SelectedPolicies = keyof Pick<
   Shop,
@@ -47,16 +48,18 @@ export default function Policy() {
   const {policy} = useLoaderData<typeof loader>();
 
   return (
-    <div className="policy">
-      <br />
-      <br />
-      <div>
-        <Link to="/policies">← Back to Policies</Link>
+    <Container className="py-8 md:py-12">
+      <div className="policy">
+        <br />
+        <br />
+        <div>
+          <Link to="/policies">← Back to Policies</Link>
+        </div>
+        <br />
+        <h1>{policy.title}</h1>
+        <div dangerouslySetInnerHTML={{__html: policy.body}} />
       </div>
-      <br />
-      <h1>{policy.title}</h1>
-      <div dangerouslySetInnerHTML={{__html: policy.body}} />
-    </div>
+    </Container>
   );
 }
 

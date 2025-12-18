@@ -3,6 +3,7 @@ import {data, redirect} from 'react-router';
 import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';
 import {Link, useLoaderData} from 'react-router';
 import {getArtist, getTeacher, getStudents, calculateAge, type Artist} from '~/data/artists';
+import {Container} from '~/components/atoms/container';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `${data?.artist?.name} | Artists | ArtfulFam`}];
@@ -32,7 +33,7 @@ export default function ArtistPage() {
   const age = calculateAge(artist.birthday);
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12">
+    <Container className="py-8 md:py-12">
       <div className="max-w-4xl mx-auto">
         {/* Back link */}
         <Link
@@ -165,6 +166,6 @@ export default function ArtistPage() {
           </div>
         )}
       </div>
-    </div>
+    </Container>
   );
 }

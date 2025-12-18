@@ -2,6 +2,7 @@ import { Form, NavLink, Outlet, useLoaderData } from 'react-router';
 import {data, redirect} from 'react-router';
 import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
 import type {CustomerFragment} from 'storefrontapi.generated';
+import {Container} from '~/components/atoms/container';
 
 export function shouldRevalidate() {
   return true;
@@ -107,12 +108,14 @@ function AccountLayout({
     : 'Account Details';
 
   return (
-    <div className="account">
-      <h1>{heading}</h1>
-      <br />
-      <AcccountMenu />
-      {children}
-    </div>
+    <Container className="py-8 md:py-12">
+      <div className="account">
+        <h1>{heading}</h1>
+        <br />
+        <AcccountMenu />
+        {children}
+      </div>
+    </Container>
   );
 }
 

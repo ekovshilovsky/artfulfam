@@ -5,6 +5,7 @@ import { useLoaderData } from 'react-router';
 import {getPaginationVariables} from '@shopify/hydrogen';
 
 import {SearchForm, SearchResults, NoSearchResults} from '~/components/Search';
+import {Container} from '~/components/atoms/container';
 
 export const meta: MetaFunction = () => {
   return [{title: `Hydrogen | Search`}];
@@ -49,15 +50,17 @@ export async function loader({request, context}: LoaderFunctionArgs) {
 export default function SearchPage() {
   const {searchTerm, searchResults} = useLoaderData<typeof loader>();
   return (
-    <div className="search">
-      <h1>Search</h1>
-      <SearchForm searchTerm={searchTerm} />
-      {!searchTerm || !searchResults.totalResults ? (
-        <NoSearchResults />
-      ) : (
-        <SearchResults results={searchResults.results} />
-      )}
-    </div>
+    <Container className="py-8 md:py-12">
+      <div className="search">
+        <h1>Search</h1>
+        <SearchForm searchTerm={searchTerm} />
+        {!searchTerm || !searchResults.totalResults ? (
+          <NoSearchResults />
+        ) : (
+          <SearchResults results={searchResults.results} />
+        )}
+      </div>
+    </Container>
   );
 }
 

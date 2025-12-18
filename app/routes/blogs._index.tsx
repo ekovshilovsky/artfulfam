@@ -3,6 +3,7 @@ import {data} from 'react-router';
 import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
 import { Link, useLoaderData } from 'react-router';
 import {Pagination, getPaginationVariables} from '@shopify/hydrogen';
+import {Container} from '~/components/atoms/container';
 
 export const meta: MetaFunction = () => {
   return [{title: `Hydrogen | Logs`}];
@@ -26,37 +27,39 @@ export default function Blogs() {
   const {blogs} = useLoaderData<typeof loader>();
 
   return (
-    <div className="blogs">
-      <h1>Blogs</h1>
-      <div className="blogs-grid">
-        <Pagination connection={blogs}>
-          {({nodes, isLoading, PreviousLink, NextLink}) => {
-            return (
-              <>
-                <PreviousLink>
-                  {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
-                </PreviousLink>
-                {nodes.map((blog) => {
-                  return (
-                    <Link
-                      className="blog"
-                      key={blog.handle}
-                      prefetch="intent"
-                      to={`/blogs/${blog.handle}`}
-                    >
-                      <h2>{blog.title}</h2>
-                    </Link>
-                  );
-                })}
-                <NextLink>
-                  {isLoading ? 'Loading...' : <span>Load more ↓</span>}
-                </NextLink>
-              </>
-            );
-          }}
-        </Pagination>
+    <Container className="py-8 md:py-12">
+      <div className="blogs">
+        <h1>Blogs</h1>
+        <div className="blogs-grid">
+          <Pagination connection={blogs}>
+            {({nodes, isLoading, PreviousLink, NextLink}) => {
+              return (
+                <>
+                  <PreviousLink>
+                    {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
+                  </PreviousLink>
+                  {nodes.map((blog) => {
+                    return (
+                      <Link
+                        className="blog"
+                        key={blog.handle}
+                        prefetch="intent"
+                        to={`/blogs/${blog.handle}`}
+                      >
+                        <h2>{blog.title}</h2>
+                      </Link>
+                    );
+                  })}
+                  <NextLink>
+                    {isLoading ? 'Loading...' : <span>Load more ↓</span>}
+                  </NextLink>
+                </>
+              );
+            }}
+          </Pagination>
+        </div>
       </div>
-    </div>
+    </Container>
   );
 }
 

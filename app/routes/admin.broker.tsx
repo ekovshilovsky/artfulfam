@@ -2,6 +2,7 @@ import {Link} from 'react-router';
 import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';
 import {data, useLoaderData} from 'react-router';
 import {getAdminBrokerConfig, listBrokerTokenShops} from '~/lib/admin-broker.server';
+import {Container} from '~/components/atoms/container';
 
 export async function loader({context, request}: LoaderFunctionArgs) {
   const env = (context as any).env as Record<string, string | undefined> | undefined;
@@ -23,7 +24,7 @@ export default function AdminBrokerPage() {
   const d = useLoaderData<typeof loader>();
 
   return (
-    <div className="container mx-auto px-4 py-10 max-w-2xl space-y-6">
+    <Container maxWidthClassName="max-w-2xl" className="py-10 space-y-6">
       <h1 className="text-3xl font-bold font-display">Admin Auth Broker (placeholder)</h1>
       <p className="text-muted-foreground">
         This is a deployable placeholder for a future OAuth broker. Tokens are stored in-memory for now.
@@ -60,7 +61,7 @@ export default function AdminBrokerPage() {
           <p className="text-muted-foreground">No connected shops.</p>
         )}
       </div>
-    </div>
+    </Container>
   );
 }
 

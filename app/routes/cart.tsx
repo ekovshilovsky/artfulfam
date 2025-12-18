@@ -7,6 +7,7 @@ import {data} from 'react-router';
 import type {ActionFunctionArgs} from '@shopify/hydrogen/oxygen';;
 import type {CartApiQueryFragment} from 'storefrontapi.generated';
 import {CartMain} from '~/components/Cart';
+import {Container} from '~/components/atoms/container';
 
 export const meta: MetaFunction = () => {
   return [{title: `Hydrogen | Cart`}];
@@ -91,15 +92,17 @@ export default function Cart() {
   const cart = root.data?.cart as Promise<CartApiQueryFragment | null>;
 
   return (
-    <div className="cart">
-      <h1>Cart</h1>
-      <Suspense fallback={<p>Loading cart ...</p>}>
-        <Await errorElement={<div>An error occurred</div>} resolve={cart}>
-          {(cart) => {
-            return <CartMain layout="page" cart={cart} />;
-          }}
-        </Await>
-      </Suspense>
-    </div>
+    <Container className="py-8 md:py-12">
+      <div className="cart">
+        <h1>Cart</h1>
+        <Suspense fallback={<p>Loading cart ...</p>}>
+          <Await errorElement={<div>An error occurred</div>} resolve={cart}>
+            {(cart) => {
+              return <CartMain layout="page" cart={cart} />;
+            }}
+          </Await>
+        </Suspense>
+      </div>
+    </Container>
   );
 }

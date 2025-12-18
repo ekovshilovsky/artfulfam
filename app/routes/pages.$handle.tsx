@@ -2,6 +2,7 @@ import {MetaFunction} from 'react-router';;
 import {data} from 'react-router';
 import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';;
 import { useLoaderData } from 'react-router';
+import {Container} from '~/components/atoms/container';
 
 export const meta: MetaFunction = ({data}) => {
   return [{title: `Hydrogen | ${data.page.title}`}];
@@ -29,12 +30,14 @@ export default function Page() {
   const {page} = useLoaderData<typeof loader>();
 
   return (
-    <div className="page">
-      <header>
-        <h1>{page.title}</h1>
-      </header>
-      <div dangerouslySetInnerHTML={{__html: page.body}} />
-    </div>
+    <Container className="py-8 md:py-12">
+      <div className="page">
+        <header>
+          <h1>{page.title}</h1>
+        </header>
+        <div dangerouslySetInnerHTML={{__html: page.body}} />
+      </div>
+    </Container>
   );
 }
 

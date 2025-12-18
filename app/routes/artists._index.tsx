@@ -2,6 +2,7 @@ import {MetaFunction} from 'react-router';
 import {data} from 'react-router';
 import {Link, useLoaderData} from 'react-router';
 import {getAllArtists, calculateAge, type Artist} from '~/data/artists';
+import {Container} from '~/components/atoms/container';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Our Artists | ArtfulFam'}];
@@ -16,7 +17,7 @@ export default function Artists() {
   const {artists} = useLoaderData<typeof loader>();
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12">
+    <Container className="py-8 md:py-12">
       <div className="max-w-4xl mx-auto text-center mb-12">
         <h1 className="text-4xl md:text-5xl font-bold mb-4 font-display">
           Meet Our Artists
@@ -31,7 +32,7 @@ export default function Artists() {
           <ArtistCard key={artist.id} artist={artist} />
         ))}
       </div>
-    </div>
+    </Container>
   );
 }
 

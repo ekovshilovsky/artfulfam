@@ -11,6 +11,7 @@ import type {
 import {Hero} from '~/components/Hero';
 import {AboutSection} from '~/components/AboutSection';
 import {Newsletter} from '~/components/Newsletter';
+import {Container} from '~/components/atoms/container';
 
 export const meta: MetaFunction = () => {
   return [{title: 'ArtfulFam | Kids Art Print on Demand'}];
@@ -72,7 +73,7 @@ function RecommendedProducts({
 }) {
   return (
     <section className="py-16 md:py-24">
-      <div className="container mx-auto px-4">
+      <Container>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-bold mb-4 font-display">
             Featured Artwork
@@ -150,7 +151,7 @@ function RecommendedProducts({
             }}
           </Await>
         </Suspense>
-      </div>
+      </Container>
     </section>
   );
 }

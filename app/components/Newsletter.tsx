@@ -1,4 +1,5 @@
 import {useRef, useState} from 'react';
+import {Container} from './atoms/container';
 
 export function Newsletter() {
   const [loading, setLoading] = useState(false);
@@ -31,7 +32,7 @@ export function Newsletter() {
 
   return (
     <section className="py-16 md:py-24">
-      <div className="container mx-auto px-4">
+      <Container>
         <div className="max-w-2xl mx-auto bg-gradient-to-br from-primary to-accent text-primary-foreground rounded-2xl p-8 md:p-12 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 font-display">
             Stay in the Loop!
@@ -73,7 +74,7 @@ export function Newsletter() {
             </div>
           )}
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

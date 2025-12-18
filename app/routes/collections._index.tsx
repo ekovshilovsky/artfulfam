@@ -3,6 +3,7 @@ import {data} from 'react-router';
 import type {LoaderFunctionArgs} from '@shopify/hydrogen/oxygen';
 import {Pagination, getPaginationVariables, Image} from '@shopify/hydrogen';
 import type {CollectionFragment} from 'storefrontapi.generated';
+import {Container} from '~/components/atoms/container';
 
 export async function loader({context, request}: LoaderFunctionArgs) {
   const paginationVariables = getPaginationVariables(request, {
@@ -22,7 +23,7 @@ export default function Collections() {
   return (
     <div className="min-h-screen">
       <section className="py-12 md:py-16">
-        <div className="container mx-auto px-4">
+        <Container>
           <div className="mb-10">
             <h1 className="text-3xl md:text-5xl font-bold font-display text-foreground">
               Collections
@@ -51,7 +52,7 @@ export default function Collections() {
               </div>
             )}
           </Pagination>
-        </div>
+        </Container>
       </section>
     </div>
   );

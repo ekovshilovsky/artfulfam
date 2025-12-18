@@ -1,10 +1,11 @@
 import { useMatches, NavLink, Link } from 'react-router';
 import type {FooterQuery} from 'storefrontapi.generated';
+import {Container} from './atoms/container';
 
 export function Footer({menu}: FooterQuery) {
   return (
     <footer className="bg-muted border-t border-border py-12">
-      <div className="container mx-auto px-4">
+      <Container>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
             <div className="text-2xl font-bold text-primary mb-4 font-display">
@@ -82,7 +83,7 @@ export function Footer({menu}: FooterQuery) {
         <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
           <p>© {new Date().getFullYear()} ArtfulFam. All rights reserved. Made with ❤️ by young artists.</p>
         </div>
-      </div>
+      </Container>
     </footer>
   );
 }

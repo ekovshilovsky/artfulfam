@@ -1,9 +1,16 @@
 import { Link } from 'react-router';
+import {Container} from './atoms/container';
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-32 -mt-16 -mx-[1rem] px-[1rem]" style={{background: 'linear-gradient(to bottom right, var(--secondary), var(--background), var(--muted))'}}>
-      <div className="container mx-auto px-4">
+    <section
+      className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-32 -mt-16"
+      style={{
+        background:
+          'linear-gradient(to bottom right, var(--secondary), var(--background), var(--muted))',
+      }}
+    >
+      <Container>
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent px-4 py-2 rounded-full mb-6 animate-fade-in">
             <svg
@@ -46,7 +53,7 @@ export function Hero() {
             </Link>
           </div>
         </div>
-      </div>
+      </Container>
 
       {/* Decorative elements */}
       <div className="absolute top-20 left-10 w-20 h-20 bg-accent/20 rounded-full blur-2xl animate-pulse" />
