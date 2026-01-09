@@ -8,8 +8,12 @@
   "scripts": {
     "dev": "turbo dev",
     "dev:storefront": "pnpm --filter @repo/storefront dev",
+    "dev:api": "pnpm --filter @repo/api dev",
+    "dev:admin": "pnpm --filter @repo/contributor-admin dev",
     "build": "turbo build",
     "build:storefront": "pnpm --filter @repo/storefront build",
+    "build:api": "pnpm --filter @repo/api build",
+    "build:admin": "pnpm --filter @repo/contributor-admin build",
     "typecheck": "turbo typecheck",
     "lint": "turbo lint",
     "contracts:gen": "pnpm --filter @repo/contracts gen",
