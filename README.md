@@ -1,48 +1,138 @@
-# Hydrogen v2
+# ArtfulFam Platform
 
-This directory is a brief example of a [Hydrogen v2](https://shopify.dev/custom-storefronts/hydrogen) storefront that can be deployed to Vercel with zero configuration.
+A monorepo containing the ArtfulFam e-commerce platform built with Hydrogen/Oxygen storefront, NestJS backend, and contributor admin.
 
-## Deploy Your Own
+## Repository Structure
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/vercel/examples/tree/main/framework-boilerplates/hydrogen-2&template=hydrogen-2)
-
-_Live Example: https://hydrogen-v2-template.vercel.app_
-
-You can also deploy using the [Vercel CLI](https://vercel.com/docs/cli):
-
-```sh
-npm i -g vercel
-vercel
+```
+repo/
+├── apps/
+│   ├── storefront/          # Hydrogen/Oxygen storefront (deployed to Oxygen)
+│   ├── api/                 # NestJS backend (deployed to Vercel) - coming soon
+│   └── contributor-admin/   # Vite React admin (deployed to Vercel) - coming soon
+├── packages/
+│   ├── contracts/           # Zod schemas → OpenAPI → generated client
+│   ├── domain/              # Pure business logic (validation, pricing)
+│   ├── pod/                 # Print-on-Demand provider abstraction (Printful)
+│   ├── shopify/             # Shopify OAuth, Admin API, webhooks helpers
+│   └── config/              # Shared TypeScript/ESLint config
+├── tooling/
+│   └── scripts/             # Catalog sync and maintenance scripts
+├── turbo.json               # Turborepo configuration
+├── pnpm-workspace.yaml      # pnpm workspace configuration
+└── package.json             # Root package.json
 ```
 
-Hydrogen is Shopify’s stack for headless commerce. Hydrogen is designed to dovetail with [Remix](https://remix.run/), Shopify’s full stack web framework. This template contains a **minimal setup** of components, queries and tooling to get started with Hydrogen.
+## Prerequisites
 
-[Check out Hydrogen docs](https://shopify.dev/custom-storefronts/hydrogen)
-[Get familiar with Remix](https://remix.run/docs/en/v1)
+- Node.js >= 22
+- pnpm 10.27.0
 
-## What's included
+## Getting Started
 
-- Remix
-- Hydrogen
-- Oxygen
-- Shopify CLI
-- ESLint
-- Prettier
-- GraphQL generator
-- TypeScript and JavaScript flavors
-- Minimal setup of components and routes
+### Install Dependencies
+
+```bash
+pnpm install
+```
+
+### Run Storefront Locally
+
+```bash
+# Copy environment file
+cp apps/storefront/.env.example apps/storefront/.env
+# Edit .env with your Shopify credentials
+
+# Start the storefront dev server
+pnpm dev:storefront
+```
+
+The storefront will be available at http://localhost:3000
+
+### Run All Apps (Dev Mode)
+
+```bash
+pnpm dev
+```
+
+### Build All Packages
+
+```bash
+pnpm build
+```
+
+### Type Check
+
+```bash
+pnpm typecheck
+```
+
+### Lint
+
+```bash
+pnpm lint
+```
+
+## Apps
+
+### Storefront (`apps/storefront`)
+
+Hydrogen v2 storefront deployed to Shopify Oxygen.
+
+- [Hydrogen Documentation](https://shopify.dev/custom-storefronts/hydrogen)
+- [Oxygen Documentation](https://shopify.dev/docs/api/oxygen)
+
+### API (`apps/api`) - Coming Soon
+
+NestJS backend for:
+- POD template management
+- Product draft workflows
+- Shopify multi-tenant OAuth
+- Webhook processing
+
+### Contributor Admin (`apps/contributor-admin`) - Coming Soon
+
+Vite React admin for contributors to:
+- Create product designs
+- Manage drafts
+- View profit goals
+
+## Packages
+
+### `@repo/contracts`
+
+Contract-first API definitions using Zod schemas with OpenAPI and client generation.
+
+### `@repo/domain`
+
+Pure business logic for validation, pricing, and profit calculations.
+
+### `@repo/pod`
+
+Print-on-Demand provider abstraction with Printful adapter.
+
+### `@repo/shopify`
+
+Shopify OAuth, Admin API client, and webhook verification helpers.
+
+### `@repo/config`
+
+Shared TypeScript and ESLint configuration.
 
 ## Environment Variables
 
-Using Hydrogen requires a few [environment variables](https://shopify.dev/docs/custom-storefronts/hydrogen/environment-variables) to be set in order to properly connect to Shopify. For this template, the minimal set of environment variables are defined in the `vercel.json` file, which will be applied to the deployment when deployed to Vercel. However, you should migrate these default environment variables to your Project's Environment Variables configuration in the Vercel dashboard (or using the `vc env` commands), and update them according to your needs (also change the `SESSION_SECRET` to your own value). Once that is done, delete the `vercel.json` file from your project to prevent the environment variables defined there from taking precedence.
+See `apps/storefront/.env.example` for required environment variables.
 
-## Local development
+## Deployment
 
-Rename the `.env.example` file to `.env` in order for the Shopify dev server to use those environment variables during local development. If you defined/modified additional environment variables based on the section above, be sure to apply those changes in your `.env` file as well.
+### Storefront (Oxygen)
 
-Then run the following commands:
+The storefront is automatically deployed to Oxygen on push via GitHub Actions.
 
-```bash
-npm install
-npm run dev
-```
+### Backend & Admin (Vercel)
+
+Coming soon.
+
+## License
+
+Proprietary - All rights reserved.

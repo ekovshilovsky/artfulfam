@@ -22,7 +22,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.26.0
+          version: 10.27.0
 
       - name: Get pnpm store directory
         shell: bash
@@ -41,6 +41,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build and Publish to Oxygen
+        working-directory: apps/storefront
         run: npx shopify hydrogen deploy
         env:
           SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN_1000072751 }}
