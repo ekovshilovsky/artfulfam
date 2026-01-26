@@ -8,9 +8,11 @@
  */
 import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
+import { TRPCError } from "@trpc/server";
 import { ZodError } from "zod";
 
 import { db } from "@/server/db";
+import { env } from "@/env";
 
 /**
  * 1. CONTEXT
@@ -104,3 +106,15 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+
+const requireAdminToken = t.middleware(({ ctx, next }) => {
+  const token = ctx.headers.get("x-admin-token");
+
+  if (!token || token !== env.ADMIN_TOKEN) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  return next();
+});
+
+export const adminProcedure = t.procedure.use(timingMiddleware).use(requireAdminToken);
