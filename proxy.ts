@@ -9,7 +9,9 @@ const getBearerToken = (headerValue: string | null) => {
   return token;
 };
 
-export const middleware = (request: NextRequest) => {
+// Next.js 16+ uses proxy.ts instead of middleware.ts
+// The proxy function runs on Node.js runtime
+export const proxy = (request: NextRequest) => {
   const { pathname, searchParams } = request.nextUrl;
 
   if (!pathname.startsWith(ADMIN_MATCHER)) {
