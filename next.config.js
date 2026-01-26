@@ -5,6 +5,14 @@
 import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
-const config = {};
+const config = {
+  // Enable Cache Components for the new "use cache" directive
+  cacheComponents: true,
+
+  experimental: {
+    // Enable Turbopack file system caching for production builds
+    turbopackFileSystemCacheForBuild: true,
+  },
+};
 
 export default config;
