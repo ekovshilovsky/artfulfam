@@ -15,7 +15,8 @@ export function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
   // Admin route protection - return 401 for programmatic access
-  if (pathname.startsWith("/admin")) {
+  // Match /admin exactly or /admin/* (not /administrator, /admin-public, etc.)
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     const token =
       request.headers.get("x-admin-token") ??
       getBearerToken(request.headers.get("authorization")) ??
