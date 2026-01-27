@@ -1,11 +1,31 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+const getBearerToken = (headerValue: string | null) => {
+  if (!headerValue) return null;
+  const [scheme, token] = headerValue.split(" ");
+  if (scheme?.toLowerCase() !== "bearer" || !token) return null;
+  return token;
+};
+
 /**
  * Next.js 16 Proxy - runs on Node.js runtime
- * Used for routing (rewrites, redirects, headers) - NOT for auth
- * Auth should be handled in layouts or route handlers
+ * Handles routing, headers, and lightweight auth checks
  */
 export function proxy(request: NextRequest) {
+  const { pathname, searchParams } = request.nextUrl;
+
+  // Admin route protection - return 401 for programmatic access
+  if (pathname.startsWith("/admin")) {
+    const token =
+      request.headers.get("x-admin-token") ??
+      getBearerToken(request.headers.get("authorization")) ??
+      searchParams.get("admin_token");
+
+    if (!token || token !== process.env.ADMIN_TOKEN) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+  }
+
   const response = NextResponse.next();
 
   // Add security headers
