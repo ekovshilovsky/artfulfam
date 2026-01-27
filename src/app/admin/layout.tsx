@@ -1,6 +1,9 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+// Auth layouts must be dynamic (access headers/cookies)
+export const dynamic = "force-dynamic";
+
 const getBearerToken = (headerValue: string | null) => {
   if (!headerValue) return null;
   const [scheme, token] = headerValue.split(" ");
