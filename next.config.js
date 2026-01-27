@@ -9,10 +9,8 @@ const config = {
   // Enable Cache Components for the new "use cache" directive
   cacheComponents: true,
 
-  experimental: {
-    // Enable Turbopack file system caching for production builds
-    turbopackFileSystemCacheForBuild: true,
-  },
+  // Enable Turbopack file system caching for faster builds
+  turbopackFileSystemCache: true,
 };
 
 export default config;
