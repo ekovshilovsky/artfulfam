@@ -7,42 +7,28 @@ const getBearerToken = (headerValue: string | null) => {
   return token;
 };
 
-// Route pattern for admin paths - matches /admin and /admin/*
-const ADMIN_ROUTE = /^\/admin(\/|$)/;
-
 /**
  * Next.js 16 Proxy - runs on Node.js runtime
- * Handles routing, headers, and lightweight auth checks
+ * Lightweight auth check for admin routes only
+ * Security headers are configured in next.config.js
  */
 export function proxy(request: NextRequest) {
-  const { pathname, searchParams } = request.nextUrl;
-  const response = NextResponse.next();
+  const { searchParams } = request.nextUrl;
 
   // Admin route protection - return 401 for unauthorized access
-  if (ADMIN_ROUTE.test(pathname)) {
-    const token =
-      request.headers.get("x-admin-token") ??
-      getBearerToken(request.headers.get("authorization")) ??
-      searchParams.get("admin_token");
+  const token =
+    request.headers.get("x-admin-token") ??
+    getBearerToken(request.headers.get("authorization")) ??
+    searchParams.get("admin_token");
 
-    if (!token || token !== process.env.ADMIN_TOKEN) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
+  if (!token || token !== process.env.ADMIN_TOKEN) {
+    return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  // Add security headers to all responses
-  response.headers.set("X-Frame-Options", "DENY");
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
-  // Matcher filters which routes invoke the proxy
-  // Using :path* pattern for Next.js optimized route matching
-  matcher: [
-    "/admin/:path*", // Admin routes (auth required)
-    "/((?!_next/static|_next/image|favicon.ico).*)", // All other routes (security headers)
-  ],
+  // Single matcher - proxy only runs for admin routes
+  matcher: ["/admin/:path*"],
 };
