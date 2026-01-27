@@ -55,6 +55,12 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           headers: () => {
             const headers = new Headers();
             headers.set("x-trpc-source", "nextjs-react");
+            if (typeof window !== "undefined") {
+              const adminToken = window.localStorage.getItem("admin_token");
+              if (adminToken) {
+                headers.set("x-admin-token", adminToken);
+              }
+            }
             return headers;
           },
         }),

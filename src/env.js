@@ -9,6 +9,13 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.string().url(),
     ADMIN_TOKEN: z.string().min(1),
+    PRINTFUL_API_KEY: z.string().min(1),
+    DO_SPACES_ENDPOINT: z.string().url(),
+    DO_SPACES_REGION: z.string().min(1),
+    DO_SPACES_BUCKET: z.string().min(1),
+    DO_SPACES_KEY: z.string().min(1),
+    DO_SPACES_SECRET: z.string().min(1),
+    DO_SPACES_PUBLIC_BASE_URL: z.string().url(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -30,6 +37,13 @@ export const env = createEnv({
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
     ADMIN_TOKEN: process.env.ADMIN_TOKEN,
+    PRINTFUL_API_KEY: process.env.PRINTFUL_API_KEY,
+    DO_SPACES_ENDPOINT: process.env.DO_SPACES_ENDPOINT,
+    DO_SPACES_REGION: process.env.DO_SPACES_REGION,
+    DO_SPACES_BUCKET: process.env.DO_SPACES_BUCKET,
+    DO_SPACES_KEY: process.env.DO_SPACES_KEY,
+    DO_SPACES_SECRET: process.env.DO_SPACES_SECRET,
+    DO_SPACES_PUBLIC_BASE_URL: process.env.DO_SPACES_PUBLIC_BASE_URL,
     NODE_ENV: process.env.NODE_ENV,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },

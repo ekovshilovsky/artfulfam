@@ -11,9 +11,10 @@ export const printfulSyncProducts = createTable(
       .integer()
       .notNull()
       .references(() => products.id, { onDelete: "cascade" }),
-    printfulSyncProductId: d.integer().notNull(),
+    printfulSyncProductId: d.integer(),
     printfulExternalProductId: d.varchar({ length: 128 }),
     status: d.varchar({ length: 32 }).notNull().default("synced"),
+    lastError: d.text(),
     syncedAt: d.timestamp({ withTimezone: true }),
   }),
   (t) => [
