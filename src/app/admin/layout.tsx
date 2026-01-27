@@ -1,8 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-
-// Auth layouts must be dynamic (access headers/cookies)
-export const dynamic = "force-dynamic";
+import { Suspense } from "react";
 
 const getBearerToken = (headerValue: string | null) => {
   if (!headerValue) return null;
@@ -11,7 +9,7 @@ const getBearerToken = (headerValue: string | null) => {
   return token;
 };
 
-async function validateAdminToken() {
+async function AdminAuthGate({ children }: { children: React.ReactNode }) {
   const headersList = await headers();
 
   const token =
@@ -19,22 +17,20 @@ async function validateAdminToken() {
     getBearerToken(headersList.get("authorization"));
 
   if (!token || token !== process.env.ADMIN_TOKEN) {
-    return false;
-  }
-
-  return true;
-}
-
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const isAuthenticated = await validateAdminToken();
-
-  if (!isAuthenticated) {
     redirect("/");
   }
 
   return <>{children}</>;
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AdminAuthGate>{children}</AdminAuthGate>
+    </Suspense>
+  );
 }
