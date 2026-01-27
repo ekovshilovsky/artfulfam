@@ -7,16 +7,19 @@ const getBearerToken = (headerValue: string | null) => {
   return token;
 };
 
+// Route pattern for admin paths - matches /admin and /admin/*
+const ADMIN_ROUTE = /^\/admin(\/|$)/;
+
 /**
  * Next.js 16 Proxy - runs on Node.js runtime
  * Handles routing, headers, and lightweight auth checks
  */
 export function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
+  const response = NextResponse.next();
 
-  // Admin route protection - return 401 for programmatic access
-  // Match /admin exactly or /admin/* (not /administrator, /admin-public, etc.)
-  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+  // Admin route protection - return 401 for unauthorized access
+  if (ADMIN_ROUTE.test(pathname)) {
     const token =
       request.headers.get("x-admin-token") ??
       getBearerToken(request.headers.get("authorization")) ??
@@ -27,9 +30,7 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  const response = NextResponse.next();
-
-  // Add security headers
+  // Add security headers to all responses
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -38,8 +39,10 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // Matcher filters which routes invoke the proxy
+  // Using :path* pattern for Next.js optimized route matching
   matcher: [
-    // Match all paths except static files and images
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/admin/:path*", // Admin routes (auth required)
+    "/((?!_next/static|_next/image|favicon.ico).*)", // All other routes (security headers)
   ],
 };
