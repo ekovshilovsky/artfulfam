@@ -9,9 +9,9 @@ const getBearerToken = (headerValue: string | null) => {
   return token;
 };
 
-// Next.js 16+ uses proxy.ts instead of middleware.ts
-// The proxy function runs on Node.js runtime
-export const proxy = (request: NextRequest) => {
+// Using middleware.ts for Vercel Edge runtime
+// Note: middleware.ts is deprecated in Next.js 16 but still works for Edge
+export const middleware = (request: NextRequest) => {
   const { pathname, searchParams } = request.nextUrl;
 
   if (!pathname.startsWith(ADMIN_MATCHER)) {
@@ -32,6 +32,5 @@ export const proxy = (request: NextRequest) => {
 
 export const config = {
   matcher: ["/admin/:path*"],
-  // Next.js 16 proxy runs on Node.js runtime (Edge is no longer supported)
-  runtime: "nodejs",
+  runtime: "edge",
 };
