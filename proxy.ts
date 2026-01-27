@@ -32,4 +32,6 @@ export const proxy = (request: NextRequest) => {
 
 export const config = {
   matcher: ["/admin/:path*"],
+  // Next.js 16 proxy runs on Node.js runtime (Edge is no longer supported)
+  runtime: "nodejs",
 };
