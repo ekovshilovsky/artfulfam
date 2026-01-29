@@ -1105,9 +1105,164 @@ src/
 
 ---
 
-## 11. Adding New POD Providers
+## 11. Future POD Providers Roadmap
 
-### 11.1 Steps to Add a New Provider
+### 11.1 Planned Providers
+
+| Provider | Priority | Unique Value | Target Products | Est. Integration |
+|----------|----------|--------------|-----------------|------------------|
+| **Gooten** | High | Large catalog, competitive pricing | Home goods, phone cases, jewelry | Phase 2 |
+| **SPOD** | High | Fast EU fulfillment, Spreadshirt network | European apparel market | Phase 2 |
+| **Prodigi** | Medium | Fine art, global fulfillment | Art prints, photo products | Phase 3 |
+| **CustomCat** | Medium | US-based, fast shipping | Apparel, drinkware | Phase 3 |
+| **Awkward Styles** | Low | Niche apparel, all-over prints | Custom fashion | Phase 4 |
+| **Printed Mint** | Low | Stationery, invitations | Wedding, events | Phase 4 |
+
+### 11.2 Provider Details
+
+#### Gooten
+```typescript
+{
+  slug: 'gooten',
+  name: 'Gooten',
+  apiBaseUrl: 'https://api.gooten.com/v1',
+  capabilities: {
+    mockupGeneration: true,
+    mockupStyles: ['front', 'back', 'lifestyle', 'flat'],
+    specialFinishes: [],
+    productCategories: ['apparel', 'home_decor', 'accessories', 'phone_cases', 'jewelry'],
+    webhookSupport: true,
+    apiVersion: 'v1',
+  },
+  notes: [
+    'Large product catalog (300+ products)',
+    'Competitive wholesale pricing',
+    'Good for home goods and accessories',
+    'API uses different auth model (API key + recipe ID)',
+  ],
+  apiDocs: 'https://www.gooten.com/api-docs',
+}
+```
+
+#### SPOD (Spreadshirt Print-On-Demand)
+```typescript
+{
+  slug: 'spod',
+  name: 'SPOD',
+  apiBaseUrl: 'https://api.spod.com/v1',
+  capabilities: {
+    mockupGeneration: true,
+    mockupStyles: ['front', 'back', 'detail', 'lifestyle'],
+    specialFinishes: ['flex', 'flock', 'digital_direct'],
+    productCategories: ['apparel', 'accessories'],
+    webhookSupport: true,
+    apiVersion: 'v1',
+  },
+  notes: [
+    'Part of Spreadshirt network',
+    'Strong EU fulfillment (Germany-based)',
+    '48-hour production guarantee',
+    'Good for European customers',
+  ],
+  apiDocs: 'https://spod.com/api-documentation',
+}
+```
+
+#### Prodigi
+```typescript
+{
+  slug: 'prodigi',
+  name: 'Prodigi',
+  apiBaseUrl: 'https://api.prodigi.com/v4.0',
+  capabilities: {
+    mockupGeneration: true,
+    mockupStyles: ['product', 'lifestyle', 'detail'],
+    specialFinishes: ['giclée', 'metallic', 'canvas_wrap'],
+    productCategories: ['prints', 'canvas', 'framed', 'photo_products', 'apparel'],
+    webhookSupport: true,
+    apiVersion: 'v4.0',
+  },
+  notes: [
+    'Premium fine art printing',
+    'Global fulfillment network',
+    'Museum-quality prints',
+    'Good for art and photography',
+  ],
+  apiDocs: 'https://www.prodigi.com/print-api/docs/',
+}
+```
+
+#### CustomCat
+```typescript
+{
+  slug: 'customcat',
+  name: 'CustomCat',
+  apiBaseUrl: 'https://api.customcat.com/v1',
+  capabilities: {
+    mockupGeneration: true,
+    mockupStyles: ['front', 'back', 'mockup'],
+    specialFinishes: ['dtg', 'sublimation', 'embroidery'],
+    productCategories: ['apparel', 'drinkware', 'accessories'],
+    webhookSupport: true,
+    apiVersion: 'v1',
+  },
+  notes: [
+    'US-based fulfillment only',
+    'Fast 2-3 day production',
+    'Good for US market',
+    'Competitive apparel pricing',
+  ],
+  apiDocs: 'https://customcat.com/api-documentation',
+}
+```
+
+### 11.3 Integration Priority Matrix
+
+| Factor | Printful | Gelato | Gooten | SPOD | Prodigi |
+|--------|----------|--------|--------|------|---------|
+| Product variety | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ |
+| Premium finishes | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+| US fulfillment | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ |
+| EU fulfillment | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| API quality | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Mockup quality | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Pricing | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ |
+
+### 11.4 Provider Selection Logic (Future)
+
+```typescript
+// Auto-select best provider based on criteria
+async function selectOptimalProvider(options: {
+  productCategory: string;
+  specialFinish?: string;
+  customerRegion: string;
+  prioritize: 'cost' | 'speed' | 'quality';
+}): Promise<PODProvider> {
+  const candidates = await getProvidersForCategory(options.productCategory);
+
+  // Filter by special finish requirement
+  if (options.specialFinish) {
+    candidates = candidates.filter(p =>
+      p.capabilities.specialFinishes.includes(options.specialFinish)
+    );
+  }
+
+  // Score by region fulfillment
+  const scored = candidates.map(p => ({
+    provider: p,
+    score: calculateProviderScore(p, options),
+  }));
+
+  // Return best match
+  return scored.sort((a, b) => b.score - a.score)[0].provider;
+}
+```
+
+---
+
+## 12. Adding New POD Providers
+
+### 12.1 Steps to Add a New Provider
 
 1. **Research the provider's API**
    - Authentication method
@@ -1144,7 +1299,7 @@ src/
 
 6. **Create webhook handler** (if supported)
 
-### 11.2 Provider Capability Flags
+### 12.2 Provider Capability Flags
 
 When adding a provider, document its capabilities:
 
@@ -1163,7 +1318,7 @@ When adding a provider, document its capabilities:
 
 ---
 
-## 12. Open Questions
+## 13. Open Questions
 
 1. **Authentication**: Use NextAuth.js, Clerk, or custom auth?
 2. **Age verification**: How to verify DOB for COPPA compliance?
@@ -1175,7 +1330,7 @@ When adding a provider, document its capabilities:
 
 ---
 
-## 13. Success Metrics
+## 14. Success Metrics
 
 | Metric | Target |
 |--------|--------|
