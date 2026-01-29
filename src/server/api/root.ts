@@ -1,4 +1,5 @@
 import { adminProductsRouter } from "@/server/api/routers/admin-products";
+import { mockupsRouter } from "@/server/api/routers/mockups";
 import { ordersRouter } from "@/server/api/routers/orders";
 import { postRouter } from "@/server/api/routers/post";
 import { storefrontRouter } from "@/server/api/routers/storefront";
@@ -11,6 +12,7 @@ import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   adminProducts: adminProductsRouter,
+  mockups: mockupsRouter,
   orders: ordersRouter,
   post: postRouter,
   storefront: storefrontRouter,
