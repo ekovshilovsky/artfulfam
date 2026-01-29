@@ -2,11 +2,126 @@
 
 ## Overview
 
-This document outlines the implementation plan for a comprehensive mockup management system that integrates Printful mockup generation with Claude AI-powered image analysis. The system is designed for a multi-user e-commerce platform serving families, schools, and artists.
+This document outlines the implementation plan for a comprehensive mockup management system that integrates **multiple Print-on-Demand (POD) providers** with Claude AI-powered image analysis. The system is designed for a multi-user e-commerce platform serving families, schools, and artists.
+
+**Supported POD Providers:**
+- **Printful** - Apparel, accessories, home goods
+- **Gelato** - Premium prints, gold foil, fine art
+- **Future providers** - Extensible architecture for adding more
 
 ---
 
-## 1. Platform User Model
+## 1. Multi-POD Provider Architecture
+
+### 1.1 Provider Registry
+
+The system uses an abstracted provider layer to support multiple POD services with different capabilities.
+
+```typescript
+// Provider capability flags
+interface PODProviderCapabilities {
+  mockupGeneration: boolean;      // Can generate mockups
+  mockupStyles: string[];         // Available styles
+  specialFinishes: string[];      // Gold foil, embossing, etc.
+  productCategories: string[];    // Apparel, prints, etc.
+  webhookSupport: boolean;        // Async notifications
+  apiVersion: string;
+}
+
+// Provider registry
+const POD_PROVIDERS = {
+  printful: {
+    name: 'Printful',
+    slug: 'printful',
+    apiBaseUrl: 'https://api.printful.com',
+    capabilities: {
+      mockupGeneration: true,
+      mockupStyles: ['front', 'back', 'lifestyle', 'model_male', 'model_female', 'closeup', 'flat'],
+      specialFinishes: ['embroidery', 'dtg', 'sublimation'],
+      productCategories: ['apparel', 'accessories', 'home_decor', 'bags'],
+      webhookSupport: true,
+      apiVersion: 'v2',
+    },
+  },
+  gelato: {
+    name: 'Gelato',
+    slug: 'gelato',
+    apiBaseUrl: 'https://api.gelato.com',
+    capabilities: {
+      mockupGeneration: true,
+      mockupStyles: ['front', 'lifestyle', 'detail', 'room_context'],
+      specialFinishes: ['gold_foil', 'silver_foil', 'spot_uv', 'embossing', 'fine_art'],
+      productCategories: ['prints', 'posters', 'canvas', 'cards', 'photobooks'],
+      webhookSupport: true,
+      apiVersion: 'v4',
+    },
+  },
+  // Future providers can be added here
+} as const;
+```
+
+### 1.2 Provider-Specific Features
+
+| Provider | Unique Features | Best For |
+|----------|-----------------|----------|
+| **Printful** | Wide apparel selection, embroidery, fast US fulfillment | T-shirts, hoodies, hats, mugs |
+| **Gelato** | Gold/silver foil, fine art prints, global print network | Art prints, premium cards, posters |
+| **Future: Gooten** | Diverse product catalog | Home goods, phone cases |
+| **Future: SPOD** | Fast EU fulfillment | European customers |
+
+### 1.3 Unified Provider Interface
+
+```typescript
+// Abstract interface all providers must implement
+interface PODProvider {
+  readonly slug: string;
+  readonly name: string;
+
+  // Catalog
+  listProducts(options?: ListProductsOptions): Promise<CatalogProduct[]>;
+  getProduct(productId: string): Promise<CatalogProduct>;
+  getProductVariants(productId: string): Promise<CatalogVariant[]>;
+
+  // Mockups
+  generateMockups(request: MockupRequest): Promise<MockupJob>;
+  getMockupJobStatus(jobId: string): Promise<MockupJobStatus>;
+  getMockupStyles(productId: string): Promise<MockupStyle[]>;
+
+  // Orders (future)
+  createOrder(order: OrderRequest): Promise<Order>;
+  getOrderStatus(orderId: string): Promise<OrderStatus>;
+
+  // Webhooks
+  verifyWebhook(payload: unknown, signature: string): boolean;
+  parseWebhookEvent(payload: unknown): WebhookEvent;
+}
+
+// Normalized types across providers
+interface CatalogProduct {
+  providerId: string;           // Provider's internal ID
+  providerSlug: string;         // 'printful' | 'gelato' | etc.
+  name: string;
+  description: string;
+  category: string;
+  thumbnailUrl: string;
+  basePrice: { amount: number; currency: string };
+  specialFinishes?: string[];   // ['gold_foil', 'embossing']
+  availableRegions: string[];
+}
+
+interface MockupRequest {
+  productId: string;
+  variantIds?: string[];
+  artworkUrl: string;
+  placement: string;
+  styles: string[];
+  specialFinish?: string;       // 'gold_foil' for Gelato
+}
+```
+
+---
+
+## 2. Platform User Model
 
 ### 1.1 Age-Based User Categories
 
@@ -163,25 +278,71 @@ products
 ├── updated_at
 ```
 
-### 2.4 Mockups with Workflow
+### 2.4 POD Providers Registry
 
 ```sql
--- Product mockups from Printful
+-- Registered POD providers
+pod_providers
+├── id (PK)
+├── slug (varchar, unique) -- 'printful', 'gelato', etc.
+├── name (varchar) -- 'Printful', 'Gelato'
+├── api_base_url (text)
+├── is_active (boolean)
+├── capabilities (jsonb) -- mockup styles, special finishes, etc.
+├── settings (jsonb) -- provider-specific config
+├── created_at
+├── updated_at
+
+-- Provider API credentials (encrypted)
+pod_provider_credentials
+├── id (PK)
+├── provider_id (FK → pod_providers)
+├── credential_type (enum: 'api_key', 'oauth', 'webhook_secret')
+├── encrypted_value (text) -- encrypted API key/token
+├── expires_at (timestamp, nullable)
+├── created_at
+├── updated_at
+```
+
+### 2.5 Products with Provider Linking
+
+```sql
+-- Product variants linked to POD providers
+product_variant_pod_links
+├── id (PK)
+├── variant_id (FK → product_variants)
+├── provider_id (FK → pod_providers)
+├── provider_product_id (varchar) -- Provider's catalog product ID
+├── provider_variant_id (varchar) -- Provider's variant ID
+├── provider_sku (varchar, nullable)
+├── base_cost (decimal) -- Cost from provider
+├── special_finish (varchar, nullable) -- 'gold_foil', 'embossing', etc.
+├── is_primary_provider (boolean) -- Use this provider for fulfillment
+├── sync_status (enum: 'synced', 'pending', 'failed')
+├── last_synced_at (timestamp)
+├── created_at
+```
+
+### 2.6 Mockups with Workflow (Provider-Agnostic)
+
+```sql
+-- Product mockups from ANY POD provider
 product_mockups
 ├── id (uuid, PK)
 ├── product_id (FK → products)
 ├── variant_id (FK → product_variants, nullable)
 │
-├── -- Printful references --
-├── printful_product_id (int)
-├── printful_variant_id (int, nullable)
-├── printful_task_key (varchar) -- mockup generation task
+├── -- Provider references (generic) --
+├── provider_id (FK → pod_providers) -- Which POD provider
+├── provider_product_id (varchar) -- Provider's catalog product ID
+├── provider_variant_id (varchar, nullable)
+├── provider_task_id (varchar) -- Mockup generation task ID
 │
 ├── -- Mockup metadata --
-├── mockup_style (enum: 'front', 'back', 'left', 'right', 'lifestyle',
-│                       'model_male', 'model_female', 'closeup', 'flat', 'studio')
+├── mockup_style (varchar) -- 'front', 'lifestyle', 'room_context', etc.
 ├── placement (varchar) -- 'front', 'back', 'sleeve', etc.
-├── original_url (text) -- Printful-hosted URL
+├── special_finish (varchar, nullable) -- 'gold_foil', 'silver_foil', etc.
+├── original_url (text) -- Provider-hosted URL
 ├── stored_url (text, nullable) -- Our S3 copy
 ├── thumbnail_url (text, nullable)
 │
@@ -222,7 +383,7 @@ product_mockups
 -- 'archived'               - Removed from gallery
 ```
 
-### 2.5 AI Analysis
+### 2.7 AI Analysis
 
 ```sql
 -- Claude AI analysis results
@@ -269,23 +430,27 @@ mockup_workflow_log
 ├── created_at
 ```
 
-### 2.6 Mockup Generation Jobs
+### 2.8 Mockup Generation Jobs (Multi-Provider)
 
 ```sql
--- Track async mockup generation
+-- Track async mockup generation across providers
 mockup_generation_jobs
 ├── id (uuid, PK)
 ├── product_id (FK → products)
 ├── requested_by (FK → users)
 │
+├── -- Provider info --
+├── provider_id (FK → pod_providers) -- Which provider to use
+├── provider_task_id (varchar, nullable) -- Provider's job/task ID
+│
 ├── -- Job configuration --
 ├── artwork_url (text)
-├── requested_styles (jsonb) -- Array of style enums
+├── requested_styles (jsonb) -- Array of style strings
 ├── requested_placements (jsonb) -- Array of placement strings
 ├── variant_ids (jsonb, nullable) -- Specific variants, or all
+├── special_finish (varchar, nullable) -- 'gold_foil', etc.
 │
-├── -- Printful task tracking --
-├── printful_task_key (varchar, nullable)
+├── -- Status tracking --
 ├── status (enum: 'pending', 'submitted', 'processing', 'completed', 'failed')
 ├── error_message (text, nullable)
 ├── retry_count (int)
@@ -533,10 +698,11 @@ Respond in JSON format:
 
 ---
 
-## 6. Printful Mockup Generation
+## 6. Multi-POD Mockup Generation
 
-### 6.1 Available Mockup Styles
+### 6.1 Provider-Specific Mockup Styles
 
+**Printful Styles:**
 | Style | Description | Use Case |
 |-------|-------------|----------|
 | `front` | Flat, front view | Default product shot |
@@ -547,46 +713,100 @@ Respond in JSON format:
 | `model_female` | On female model | Apparel showcase |
 | `closeup` | Print area detail | Show design quality |
 | `flat` | Flat lay photography | Clean product shots |
-| `studio` | Studio lighting | Professional shots |
 
-### 6.2 Generation Flow
+**Gelato Styles:**
+| Style | Description | Use Case |
+|-------|-------------|----------|
+| `front` | Standard front view | Default product shot |
+| `lifestyle` | In room/context | Wall art showcase |
+| `detail` | Close-up of finish | Show gold foil, texture |
+| `room_context` | Multiple room settings | Interior visualization |
+| `packaging` | With packaging | Gift presentation |
+
+**Gelato Special Finishes:**
+| Finish | Description | Products |
+|--------|-------------|----------|
+| `gold_foil` | Metallic gold accents | Prints, cards, invitations |
+| `silver_foil` | Metallic silver accents | Prints, cards |
+| `spot_uv` | Glossy raised areas | Business cards, covers |
+| `embossing` | Raised texture | Cards, stationery |
+| `fine_art` | Premium paper/canvas | Art prints, photos |
+
+### 6.2 Generation Flow (Provider-Agnostic)
 
 ```
 1. User uploads artwork
    └─→ Store in S3
 
-2. User selects product + variants + styles
-   └─→ Create mockup_generation_job
+2. User selects product + variants + styles + provider
+   └─→ Determine provider from product catalog
+   └─→ Check provider capabilities (gold foil? embroidery?)
+   └─→ Create mockup_generation_job with provider_id
 
-3. Submit to Printful
-   POST /mockup-generator/create-task/{product_id}
-   └─→ Store task_key
+3. Submit to provider (abstracted)
+   └─→ PrintfulProvider.generateMockups() OR
+   └─→ GelatoProvider.generateMockups()
+   └─→ Store provider_task_id
 
 4. Poll for completion (or use webhook)
-   GET /mockup-generator/task
+   └─→ Provider-specific polling/webhook handling
    └─→ Get mockup URLs
 
 5. Store mockups
    └─→ Download to S3 (optional)
-   └─→ Create product_mockups records
+   └─→ Create product_mockups records with provider_id
    └─→ Set status: pending_ai_review
 
 6. Trigger AI analysis
    └─→ Queue batch analysis job
+   └─→ AI considers special finishes in evaluation
 ```
 
-### 6.3 API Endpoints Needed
+### 6.3 Provider Factory Pattern
+
+```typescript
+// Get the right provider implementation
+function getProvider(providerSlug: string): PODProvider {
+  switch (providerSlug) {
+    case 'printful':
+      return new PrintfulProvider(env.PRINTFUL_API_KEY);
+    case 'gelato':
+      return new GelatoProvider(env.GELATO_API_KEY);
+    default:
+      throw new Error(`Unknown provider: ${providerSlug}`);
+  }
+}
+
+// Usage in mockup generation
+async function generateMockups(jobId: string) {
+  const job = await getJob(jobId);
+  const provider = getProvider(job.providerSlug);
+
+  const result = await provider.generateMockups({
+    productId: job.providerProductId,
+    artworkUrl: job.artworkUrl,
+    styles: job.requestedStyles,
+    specialFinish: job.specialFinish, // 'gold_foil' for Gelato
+  });
+
+  return result;
+}
+```
+
+### 6.4 API Endpoints Needed
 
 ```typescript
 // New tRPC procedures in admin-products router
 
-// Generate mockups for a product
+// Generate mockups for a product (provider-aware)
 generateMockups: adminProcedure
   .input(z.object({
     productId: z.number(),
     artworkUrl: z.string().url(),
-    styles: z.array(mockupStyleEnum),
+    styles: z.array(z.string()), // Provider-specific styles
     variantIds: z.array(z.number()).optional(),
+    providerId: z.number().optional(), // Use specific provider
+    specialFinish: z.string().optional(), // 'gold_foil', etc.
   }))
   .mutation(...)
 
@@ -695,7 +915,8 @@ function canAccessMockup(user: User, mockup: Mockup): boolean {
 |---------|---------|-------|
 | **PostgreSQL** | Primary database | Neon, Supabase, or Railway recommended |
 | **Anthropic API** | Claude AI image analysis | Need API key with vision access |
-| **Printful API** | Mockup generation & fulfillment | Existing integration |
+| **Printful API** | Apparel mockups & fulfillment | Existing integration |
+| **Gelato API** | Premium prints, gold foil, fine art | New integration needed |
 | **AWS S3 / DigitalOcean Spaces** | File storage | Existing integration |
 | **Upstash** | Background job queues, rate limiting | For async processing |
 | **Stripe Connect** | Marketplace payouts | Future: creator payments |
@@ -732,8 +953,14 @@ await qstash.publishJSON({
 # Database
 DATABASE_URL="postgresql://..."
 
-# Printful
+# POD Providers
 PRINTFUL_API_KEY="..."
+PRINTFUL_WEBHOOK_SECRET="..."
+GELATO_API_KEY="..."
+GELATO_WEBHOOK_SECRET="..."
+# Future providers
+# GOOTEN_API_KEY="..."
+# SPOD_API_KEY="..."
 
 # Anthropic (Claude AI)
 ANTHROPIC_API_KEY="sk-ant-..."
@@ -812,9 +1039,9 @@ src/
 │   │   ├── schema/
 │   │   │   ├── base.ts
 │   │   │   ├── users.ts          # NEW: Users, roles, relationships
-│   │   │   ├── products.ts       # MODIFY: Add ownership
+│   │   │   ├── products.ts       # MODIFY: Add ownership, provider links
 │   │   │   ├── mockups.ts        # NEW: Mockups, analyses, jobs
-│   │   │   ├── printful.ts
+│   │   │   ├── pod-providers.ts  # NEW: Provider registry & credentials
 │   │   │   ├── orders.ts
 │   │   │   └── cms.ts
 │   │   └── index.ts
@@ -823,14 +1050,20 @@ src/
 │   │   ├── routers/
 │   │   │   ├── admin-products.ts # MODIFY: Add mockup procedures
 │   │   │   ├── admin-mockups.ts  # NEW: Mockup management
+│   │   │   ├── admin-providers.ts # NEW: POD provider management
 │   │   │   ├── admin-users.ts    # NEW: User management (Phase 4)
 │   │   │   └── ...
 │   │   ├── trpc.ts
 │   │   └── root.ts
 │   │
-│   ├── printful/
-│   │   ├── client.ts             # MODIFY: Add mockup methods
-│   │   └── mockup-generator.ts   # NEW: Generation logic
+│   ├── pod/                       # NEW: Multi-provider abstraction
+│   │   ├── types.ts              # Shared interfaces
+│   │   ├── provider-factory.ts   # Get provider by slug
+│   │   ├── providers/
+│   │   │   ├── printful.ts       # Printful implementation
+│   │   │   ├── gelato.ts         # Gelato implementation
+│   │   │   └── index.ts          # Export all providers
+│   │   └── mockup-generator.ts   # Provider-agnostic generation
 │   │
 │   ├── ai/
 │   │   ├── mockup-analyzer.ts    # NEW: Claude integration
@@ -843,7 +1076,7 @@ src/
 │   │
 │   └── jobs/                      # NEW: Background jobs
 │       ├── analyze-mockups.ts
-│       └── poll-printful.ts
+│       └── poll-provider.ts      # Generic provider polling
 │
 ├── app/
 │   ├── admin/
@@ -872,22 +1105,84 @@ src/
 
 ---
 
-## 11. Open Questions
+## 11. Adding New POD Providers
+
+### 11.1 Steps to Add a New Provider
+
+1. **Research the provider's API**
+   - Authentication method
+   - Catalog endpoints
+   - Mockup generation endpoints
+   - Webhook support
+
+2. **Add provider to registry**
+   ```sql
+   INSERT INTO pod_providers (slug, name, api_base_url, capabilities)
+   VALUES ('newprovider', 'New Provider', 'https://api.newprovider.com', '{...}');
+   ```
+
+3. **Implement the provider interface**
+   ```typescript
+   // src/server/pod/providers/newprovider.ts
+   export class NewProvider implements PODProvider {
+     // Implement all interface methods
+   }
+   ```
+
+4. **Register in factory**
+   ```typescript
+   // src/server/pod/provider-factory.ts
+   case 'newprovider':
+     return new NewProvider(env.NEWPROVIDER_API_KEY);
+   ```
+
+5. **Add environment variables**
+   ```bash
+   NEWPROVIDER_API_KEY="..."
+   NEWPROVIDER_WEBHOOK_SECRET="..."
+   ```
+
+6. **Create webhook handler** (if supported)
+
+### 11.2 Provider Capability Flags
+
+When adding a provider, document its capabilities:
+
+```typescript
+{
+  mockupGeneration: true,
+  mockupStyles: ['front', 'back', 'lifestyle'],
+  specialFinishes: ['embroidery', 'dtg'],
+  productCategories: ['apparel'],
+  webhookSupport: true,
+  asyncMockups: true,  // Requires polling
+  bulkOperations: true,
+  apiRateLimit: 100,   // Requests per minute
+}
+```
+
+---
+
+## 12. Open Questions
 
 1. **Authentication**: Use NextAuth.js, Clerk, or custom auth?
 2. **Age verification**: How to verify DOB for COPPA compliance?
 3. **Guardian verification**: How to verify guardian relationships?
 4. **Moderation**: Should AI also check for inappropriate content?
 5. **Pricing**: Should mockup generation have usage limits?
+6. **Provider failover**: If Printful is down, auto-switch to Gelato for similar products?
+7. **Cost optimization**: Auto-select cheapest provider for fulfillment?
 
 ---
 
-## 12. Success Metrics
+## 13. Success Metrics
 
 | Metric | Target |
 |--------|--------|
 | AI analysis accuracy (human agreement rate) | > 85% |
-| Mockup generation success rate | > 95% |
+| Mockup generation success rate (all providers) | > 95% |
 | Average review queue processing time | < 24 hours |
 | Human override rate on AI approvals | < 15% |
 | Human override rate on AI rejections | < 25% |
+| Provider API uptime | > 99.5% |
+| Cross-provider fulfillment success | > 98% |
